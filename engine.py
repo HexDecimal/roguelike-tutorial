@@ -53,8 +53,10 @@ class GameState(tcod.event.EventDispatch):
         if event.sym == tcod.event.K_ESCAPE:
             raise SystemExit()
         elif event.sym in self.MOVE_KEYS:
-            x, y = self.MOVE_KEYS[event.sym]
-            self.player_xy = self.player_xy[0] + x, self.player_xy[1] + y
+            self.cmd_move(*self.MOVE_KEYS[event.sym])
+
+    def cmd_move(self, x:int, y:int) -> None:
+        self.player_xy = self.player_xy[0] + x, self.player_xy[1] + y
 
 
 def main() -> None:
