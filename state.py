@@ -1,6 +1,8 @@
 import tcod
 import tcod.event
 
+import gamemap
+
 
 class GameState(tcod.event.EventDispatch):
 
@@ -31,17 +33,12 @@ class GameState(tcod.event.EventDispatch):
         tcod.event.K_n: (1, 1),
     }
 
-    def __init__(self, console: tcod.console.Console):
-        self.console = console
-        self.player_xy = console.width // 2, console.height // 2
+    def __init__(self, active_map: gamemap.GameMap):
+        self.active_map = active_map
 
-    def on_draw(self) -> None:
-        self.console.clear()
-        if (
-            0 <= self.player_xy[0] < self.console.width
-            and 0 <= self.player_xy[1] < self.console.height
-        ):
-            self.console.tiles["ch"][self.player_xy] = ord("@")
+    def on_draw(self, console: tcod.console.Console) -> None:
+        console.clear()
+        self.active_map.render(console)
         tcod.console_flush()
 
     def ev_quit(self, event: tcod.event.Quit) -> None:
@@ -54,4 +51,6 @@ class GameState(tcod.event.EventDispatch):
             self.cmd_move(*self.MOVE_KEYS[event.sym])
 
     def cmd_move(self, x: int, y: int) -> None:
-        self.player_xy = self.player_xy[0] + x, self.player_xy[1] + y
+        player = self.active_map.player
+        if not self.active_map.is_blocked(*player.relative(x, y)):
+            player.move_by(x, y)
