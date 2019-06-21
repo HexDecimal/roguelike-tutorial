@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+import sys
+
+import warnings
+
 import tcod
 import tcod.event
 
@@ -34,4 +38,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    if not sys.warnoptions:
+        warnings.simplefilter("default")
     main()
