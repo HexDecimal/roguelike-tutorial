@@ -33,6 +33,8 @@ class GameState(tcod.event.EventDispatch):
         tcod.event.K_n: (1, 1),
     }
 
+    COMMAND_KEYS = {tcod.event.K_ESCAPE: "quit"}
+
     def __init__(self, active_map: gamemap.GameMap):
         self.active_map = active_map
 
@@ -42,13 +44,17 @@ class GameState(tcod.event.EventDispatch):
         tcod.console_flush()
 
     def ev_quit(self, event: tcod.event.Quit) -> None:
-        raise SystemExit()
+        self.cmd_quit()
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
-        if event.sym == tcod.event.K_ESCAPE:
-            raise SystemExit()
+        if event.sym in self.COMMAND_KEYS:
+            getattr(self, f"cmd_{self.COMMAND_KEYS[event.sym]}")()
         elif event.sym in self.MOVE_KEYS:
             self.cmd_move(*self.MOVE_KEYS[event.sym])
+
+    def cmd_quit(self) -> None:
+        """Save and quit."""
+        raise SystemExit()
 
     def cmd_move(self, x: int, y: int) -> None:
         player = self.active_map.player
