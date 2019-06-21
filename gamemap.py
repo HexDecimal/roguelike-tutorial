@@ -1,3 +1,4 @@
+import random
 from typing import List, Tuple
 
 import numpy as np  # type: ignore
@@ -63,20 +64,39 @@ class GameMap:
         self.tiles[...] = (0, 0)
         self.rooms = []
 
-        room1 = Room(20, 15, 10, 15)
-        room2 = Room(35, 15, 10, 15)
+        room_max_size = 10
+        room_min_size = 6
+        max_rooms = 30
 
-        self.tiles[room1.inner] = (1, 1)
-        self.tiles[room2.inner] = (1, 1)
-        self.tiles[tcod.line_where(*room1.center, *room2.center)] = (1, 1)
+        for i in range(max_rooms):
+            # random width and height
+            w = random.randint(room_min_size, room_max_size)
+            h = random.randint(room_min_size, room_max_size)
+            # random position without going out of the boundaries of the map
+            x = random.randint(0, self.width - w)
+            y = random.randint(0, self.height - h)
+            new_room = Room(x, y, w, h)
+            if any(new_room.intersects(other) for other in self.rooms):
+                continue  # This room intersects with a previous room.
 
-        self.player = entity.Entity(
-            self.width // 2, self.height // 2, ord("@"), (255, 255, 255)
-        )
-        npc = entity.Entity(
-            self.player.x - 5, self.player.y - 5, ord("@"), (255, 255, 0)
-        )
-        self.entities = [npc, self.player]
+            # Mark room inner area as open.
+            self.tiles[new_room.inner] = (1, 1)
+            if self.rooms:
+                # Open a tunnel between rooms.
+                other_room = self.rooms[-1]
+                t_start = new_room.center
+                t_end = other_room.center
+                if random.randint(0, 1):
+                    t_middle = t_start[0], t_end[1]
+                else:
+                    t_middle = t_end[0], t_start[1]
+                self.tiles[tcod.line_where(*t_start, *t_middle)] = (1, 1)
+                self.tiles[tcod.line_where(*t_middle, *t_end)] = (1, 1)
+            self.rooms.append(new_room)
+
+        # Add player to the first room.
+        self.player = entity.Entity(*self.rooms[0].center, ord("@"), (255, 255, 255))
+        self.entities = [self.player]
 
     def is_blocked(self, x: int, y: int) -> bool:
         if not (0 <= x < self.width and 0 <= y < self.height):
