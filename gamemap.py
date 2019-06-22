@@ -44,6 +44,12 @@ class Room:
             and self.y2 >= other.y1
         )
 
+    def distance_to(self, other: "Room") -> float:
+        """Return an approximate distance from this room to another."""
+        x, y = self.center
+        other_x, other_y = other.center
+        return abs(other_x - x) + abs(other_y - y)
+
 
 class GameMap:
 
@@ -82,7 +88,12 @@ class GameMap:
             self.tiles[new_room.inner] = FLOOR
             if self.rooms:
                 # Open a tunnel between rooms.
-                other_room = self.rooms[-1]
+                if random.randint(0, 99) < 80:
+                    # 80% of tunnels are to the nearest room.
+                    other_room = min(self.rooms, key=new_room.distance_to)
+                else:
+                    # 20% of tunnels are to the previous generated room.
+                    other_room = self.rooms[-1]
                 t_start = new_room.center
                 t_end = other_room.center
                 if random.randint(0, 1):
