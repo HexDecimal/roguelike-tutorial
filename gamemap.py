@@ -6,6 +6,8 @@ import tcod.console
 
 import entity
 
+WALL = 0
+FLOOR = 1
 
 class Room:
     def __init__(self, x: int, y: int, width: int, height: int):
@@ -45,8 +47,6 @@ class Room:
 
 class GameMap:
 
-    DTYPE = [("transparent", bool), ("walkable", bool)]
-
     COLOR = {"dark_wall": (0, 0, 100), "dark_ground": (50, 50, 150)}
 
     player: entity.Entity
@@ -55,13 +55,12 @@ class GameMap:
         self.width = width
         self.height = height
         self.shape = width, height
-        self.tiles = np.empty(self.shape, dtype=self.DTYPE, order="F")
-        self.tiles[...] = (1, 1)
+        self.tiles = np.zeros(self.shape, dtype=np.bool_, order="F")
         self.entities: List[entity.Entity] = []
         self.rooms: List[Room] = []
 
     def generate(self) -> None:
-        self.tiles[...] = (0, 0)
+        self.tiles[...] = WALL
         self.rooms = []
 
         room_max_size = 10
@@ -80,7 +79,7 @@ class GameMap:
                 continue  # This room intersects with a previous room.
 
             # Mark room inner area as open.
-            self.tiles[new_room.inner] = (1, 1)
+            self.tiles[new_room.inner] = FLOOR
             if self.rooms:
                 # Open a tunnel between rooms.
                 other_room = self.rooms[-1]
@@ -90,8 +89,8 @@ class GameMap:
                     t_middle = t_start[0], t_end[1]
                 else:
                     t_middle = t_end[0], t_start[1]
-                self.tiles[tcod.line_where(*t_start, *t_middle)] = (1, 1)
-                self.tiles[tcod.line_where(*t_middle, *t_end)] = (1, 1)
+                self.tiles[tcod.line_where(*t_start, *t_middle)] = FLOOR
+                self.tiles[tcod.line_where(*t_middle, *t_end)] = FLOOR
             self.rooms.append(new_room)
 
         # Add player to the first room.
@@ -101,7 +100,7 @@ class GameMap:
     def is_blocked(self, x: int, y: int) -> bool:
         if not (0 <= x < self.width and 0 <= y < self.height):
             return True
-        if not self.tiles[x, y]["walkable"]:
+        if not self.tiles[x, y]:
             return True
 
         return False
@@ -110,7 +109,7 @@ class GameMap:
         console.tiles["ch"][: self.width, : self.height] = ord(" ")
 
         dark = np.where(
-            self.tiles["transparent"][..., np.newaxis],
+            self.tiles[..., np.newaxis],
             self.COLOR["dark_ground"],
             self.COLOR["dark_wall"],
         )
