@@ -9,6 +9,7 @@ import entity
 WALL = 0
 FLOOR = 1
 
+
 class Room:
     def __init__(self, x: int, y: int, width: int, height: int):
         self.x1 = x
@@ -53,7 +54,12 @@ class Room:
 
 class GameMap:
 
-    COLOR = {"dark_wall": (0, 0, 100), "dark_ground": (50, 50, 150)}
+    COLOR = {
+        "dark_wall": (0, 0, 100),
+        "dark_ground": (50, 50, 150),
+        "light_wall": (130, 110, 50),
+        "light_ground": (200, 180, 50),
+    }
 
     player: entity.Entity
 
@@ -61,7 +67,9 @@ class GameMap:
         self.width = width
         self.height = height
         self.shape = width, height
-        self.tiles = np.zeros(self.shape, dtype=np.bool_, order="F")
+        self.tiles = np.zeros(self.shape, dtype=bool, order="F")
+        self.explored = np.zeros(self.shape, dtype=bool, order="F")
+        self.visible = np.zeros(self.shape, dtype=bool, order="F")
         self.entities: List[entity.Entity] = []
         self.rooms: List[Room] = []
 
@@ -107,6 +115,7 @@ class GameMap:
         # Add player to the first room.
         self.player = entity.Entity(*self.rooms[0].center, ord("@"), (255, 255, 255))
         self.entities = [self.player]
+        self.update_fov()
 
     def is_blocked(self, x: int, y: int) -> bool:
         if not (0 <= x < self.width and 0 <= y < self.height):
@@ -116,6 +125,17 @@ class GameMap:
 
         return False
 
+    def update_fov(self) -> None:
+        """Update the field of view around the player."""
+        self.visible = tcod.map.compute_fov(
+            transparency=self.tiles,
+            pov=(self.player.x, self.player.y),
+            radius=10,
+            light_walls=True,
+            algorithm=tcod.FOV_RESTRICTIVE,
+        )
+        self.explored |= self.visible
+
     def render(self, console: tcod.console.Console) -> None:
         console.tiles["ch"][: self.width, : self.height] = ord(" ")
 
@@ -124,10 +144,21 @@ class GameMap:
             self.COLOR["dark_ground"],
             self.COLOR["dark_wall"],
         )
-
-        console.tiles["bg"][: self.width, : self.height, :3] = dark
+        light = np.where(
+            self.tiles[..., np.newaxis],
+            self.COLOR["light_ground"],
+            self.COLOR["light_wall"],
+        )
+        console.tiles["bg"][: self.width, : self.height, :3] = np.select(
+            (self.visible[..., np.newaxis], self.explored[..., np.newaxis]),
+            (light, dark),
+            (0, 0, 0),
+        )
 
         for obj in self.entities:
-            if 0 <= obj.x < console.width and 0 <= obj.y < console.height:
-                console.tiles["ch"][obj.x, obj.y] = obj.char
-                console.tiles["fg"][obj.x, obj.y, :3] = obj.color
+            if not (0 <= obj.x < console.width and 0 <= obj.y < console.height):
+                continue
+            if not self.visible[obj.x, obj.y]:
+                continue
+            console.tiles["ch"][obj.x, obj.y] = obj.char
+            console.tiles["fg"][obj.x, obj.y, :3] = obj.color
