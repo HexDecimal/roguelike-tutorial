@@ -1,12 +1,25 @@
-from typing import Tuple
+from typing import Optional, Tuple
+
+import fighter
 
 
 class Entity:
-    def __init__(self, x: int, y: int, char: int, color: Tuple[int, int, int]):
+    def __init__(self, x: int, y: int, fighter: Optional[fighter.Fighter] = None):
         self.x = x
         self.y = y
-        self.char = char
-        self.color = color
+        self.fighter = fighter
+
+    @property
+    def char(self) -> int:
+        if self.fighter:
+            return self.fighter.char
+        return ord("!")
+
+    @property
+    def color(self) -> Tuple[int, int, int]:
+        if self.fighter:
+            return self.fighter.color
+        return (255, 255, 255)
 
     def relative(self, x: int, y: int) -> Tuple[int, int]:
         return self.x + x, self.y + y

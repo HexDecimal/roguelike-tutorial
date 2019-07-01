@@ -5,6 +5,7 @@ import numpy as np  # type: ignore
 import tcod.console
 
 import entity
+import fighter
 
 WALL = 0
 FLOOR = 1
@@ -113,7 +114,7 @@ class GameMap:
             self.rooms.append(new_room)
 
         # Add player to the first room.
-        self.player = entity.Entity(*self.rooms[0].center, ord("@"), (255, 255, 255))
+        self.player = entity.Entity(*self.rooms[0].center, fighter.Player())
         self.entities = [self.player]
         self.update_fov()
 
