@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import List, Tuple
+from typing import List, Optional, Tuple, Type
 
 import numpy as np  # type: ignore
 import tcod.console
@@ -62,6 +62,7 @@ class Room:
             y = random.randint(self.y1 + 1, self.y2 - 2)
             if gamemap.is_blocked(x, y):
                 continue
+            monsterCls: Type[fighter.Fighter]
             if random.randint(0, 100) < 80:
                 monsterCls = fighter.Orc
             else:
@@ -151,9 +152,9 @@ class GameMap:
 
     def fighter_at(self, x: int, y: int) -> Optional[entity.Entity]:
         """Return any fighter entity found at this position."""
-        for entity in self.entities:
-            if x == entity.x and y == entity.y:
-                return entity
+        for e in self.entities:
+            if x == e.x and y == e.y:
+                return e
         return None
 
     def update_fov(self) -> None:

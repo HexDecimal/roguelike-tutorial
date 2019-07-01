@@ -58,6 +58,9 @@ class GameState(tcod.event.EventDispatch):
 
     def cmd_move(self, x: int, y: int) -> None:
         player = self.active_map.player
+        target = self.active_map.fighter_at(*player.relative(x, y))
         if not self.active_map.is_blocked(*player.relative(x, y)):
             player.move_by(x, y)
             self.active_map.update_fov()
+        elif target:
+            player.attack(target)

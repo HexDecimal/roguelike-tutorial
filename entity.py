@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Optional, Tuple
 
 import fighter
@@ -26,3 +28,18 @@ class Entity:
 
     def move_by(self, x: int, y: int) -> None:
         self.x, self.y = self.relative(x, y)
+
+    def attack(self, target: Entity) -> None:
+        assert self.fighter
+        assert target.fighter
+        damage = self.fighter.power - target.fighter.defense
+
+        who_desc = f"{self.fighter.name} attacks {target.fighter.name}"
+
+        if damage > 0:
+            target.fighter.hp -= damage
+            print(f"{who_desc} for {damage} hit points.")
+        else:
+            print(f"{who_desc} but does no damage.")
+        if target.fighter.hp <= 0:
+            print(f"The {target.fighter.name} dies.")
