@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import random
 from typing import List, Tuple
 
@@ -52,6 +54,20 @@ class Room:
         other_x, other_y = other.center
         return abs(other_x - x) + abs(other_y - y)
 
+    def place_entities(self, gamemap: GameMap) -> None:
+        """Spawn entities within this room."""
+        monsters = random.randint(0, 3)
+        for _ in range(monsters):
+            x = random.randint(self.x1 + 1, self.x2 - 2)
+            y = random.randint(self.y1 + 1, self.y2 - 2)
+            if gamemap.is_blocked(x, y):
+                continue
+            if random.randint(0, 100) < 80:
+                monsterCls = fighter.Orc
+            else:
+                monsterCls = fighter.Troll
+            gamemap.entities.append(entity.Entity(x, y, monsterCls()))
+
 
 class GameMap:
 
@@ -77,6 +93,7 @@ class GameMap:
     def generate(self) -> None:
         self.tiles[...] = WALL
         self.rooms = []
+        self.entities = []
 
         room_max_size = 10
         room_min_size = 6
@@ -113,18 +130,31 @@ class GameMap:
                 self.tiles[tcod.line_where(*t_middle, *t_end)] = FLOOR
             self.rooms.append(new_room)
 
+        for room in self.rooms:
+            room.place_entities(self)
+
         # Add player to the first room.
         self.player = entity.Entity(*self.rooms[0].center, fighter.Player())
-        self.entities = [self.player]
+        self.entities.append(self.player)
         self.update_fov()
 
     def is_blocked(self, x: int, y: int) -> bool:
+        """Return True if this position is impassible."""
         if not (0 <= x < self.width and 0 <= y < self.height):
             return True
         if not self.tiles[x, y]:
             return True
+        if self.fighter_at(x, y):
+            return True
 
         return False
+
+    def fighter_at(self, x: int, y: int) -> Optional[entity.Entity]:
+        """Return any fighter entity found at this position."""
+        for entity in self.entities:
+            if x == entity.x and y == entity.y:
+                return entity
+        return None
 
     def update_fov(self) -> None:
         """Update the field of view around the player."""
