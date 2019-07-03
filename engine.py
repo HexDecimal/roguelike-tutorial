@@ -8,7 +8,7 @@ import tcod
 import tcod.event
 
 import state
-import gamemap
+import procgen
 
 
 def main() -> None:
@@ -26,8 +26,7 @@ def main() -> None:
         vsync=True,
         order="F",
     ) as console:
-        game_map = gamemap.GameMap(map_width, map_height)
-        game_map.generate()
+        game_map = procgen.generate(map_width, map_height)
         current_state = state.GameState(game_map)
 
         while current_state:
