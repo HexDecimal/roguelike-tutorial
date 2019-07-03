@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import random
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 import numpy as np  # type: ignore
-import tcod.console
+import tcod
 
-import entity
+if TYPE_CHECKING:
+    import tcod.console
+    import entity
 
 
 class GameMap:

@@ -1,11 +1,16 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import tcod
 import tcod.event
 
-import gamemap
+if TYPE_CHECKING:
+    import gamemap
+    import model
 
 
-class GameState(tcod.event.EventDispatch):
-
+class State(tcod.event.EventDispatch):
     MOVE_KEYS = {
         tcod.event.K_LEFT: (-1, 0),
         tcod.event.K_RIGHT: (1, 0),
@@ -35,13 +40,15 @@ class GameState(tcod.event.EventDispatch):
 
     COMMAND_KEYS = {tcod.event.K_ESCAPE: "quit"}
 
-    def __init__(self, active_map: gamemap.GameMap):
-        self.active_map = active_map
+    def run(self, console: tcod.console.Console) -> None:
+        while True:
+            self.on_draw(console)
+            tcod.console_flush()
+            for event in tcod.event.wait():
+                self.dispatch(event)
 
     def on_draw(self, console: tcod.console.Console) -> None:
-        console.clear()
-        self.active_map.render(console)
-        tcod.console_flush()
+        raise NotImplementedError()
 
     def ev_quit(self, event: tcod.event.Quit) -> None:
         self.cmd_quit()
@@ -51,6 +58,27 @@ class GameState(tcod.event.EventDispatch):
             getattr(self, f"cmd_{self.COMMAND_KEYS[event.sym]}")()
         elif event.sym in self.MOVE_KEYS:
             self.cmd_move(*self.MOVE_KEYS[event.sym])
+
+    def cmd_quit(self) -> None:
+        """Save and quit."""
+        raise SystemExit()
+
+    def cmd_move(self, x: int, y: int) -> None:
+        pass
+
+
+class GameState(State):
+    def __init__(self, model: model.Model):
+        super().__init__()
+        self.model = model
+
+    @property
+    def active_map(self) -> gamemap.GameMap:
+        return self.model.active_map
+
+    def on_draw(self, console: tcod.console.Console) -> None:
+        console.clear()
+        self.active_map.render(console)
 
     def cmd_quit(self) -> None:
         """Save and quit."""

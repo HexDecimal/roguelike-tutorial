@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-
 import sys
 
 import warnings
 
 import tcod
-import tcod.event
 
+import model
 import state
 import procgen
 
@@ -26,14 +25,10 @@ def main() -> None:
         vsync=True,
         order="F",
     ) as console:
-        game_map = procgen.generate(map_width, map_height)
-        current_state = state.GameState(game_map)
-
-        while current_state:
-            current_state.on_draw(console)
-
-            for event in tcod.event.wait():
-                current_state.dispatch(event)
+        model_ = model.Model()
+        model_.active_map = procgen.generate(map_width, map_height)
+        current_state = state.GameState(model_)
+        current_state.run(console)
 
 
 if __name__ == "__main__":
