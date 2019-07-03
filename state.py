@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 import tcod
 import tcod.event
 
+import action
+
 if TYPE_CHECKING:
     import gamemap
     import model
@@ -86,10 +88,4 @@ class GameState(State):
 
     def cmd_move(self, x: int, y: int) -> None:
         """Move the player entity."""
-        player = self.active_map.player
-        target = self.active_map.fighter_at(*player.relative(x, y))
-        if not self.active_map.is_blocked(*player.relative(x, y)):
-            player.move_by(x, y)
-            self.active_map.update_fov()
-        elif target:
-            player.attack(target)
+        action.move(self.model, self.model.player, (x, y))

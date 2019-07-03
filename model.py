@@ -18,3 +18,6 @@ class Model:
     @property
     def player(self) -> entity.Entity:
         return self.active_map.player
+
+    def report(self, text: str) -> None:
+        print(text)

@@ -29,23 +29,3 @@ class Entity:
     def relative(self, x: int, y: int) -> Tuple[int, int]:
         """Return a coordinate relative to this entity."""
         return self.x + x, self.y + y
-
-    def move_by(self, x: int, y: int) -> None:
-        """Move this object to a relative position, without checks."""
-        self.x, self.y = self.relative(x, y)
-
-    def attack(self, target: Entity) -> None:
-        """Make this entities Fighter attack another entity."""
-        assert self.fighter
-        assert target.fighter
-        damage = self.fighter.power - target.fighter.defense
-
-        who_desc = f"{self.fighter.name} attacks {target.fighter.name}"
-
-        if damage > 0:
-            target.fighter.hp -= damage
-            print(f"{who_desc} for {damage} hit points.")
-        else:
-            print(f"{who_desc} but does no damage.")
-        if target.fighter.hp <= 0:
-            print(f"The {target.fighter.name} dies.")
