@@ -21,3 +21,11 @@ class Model:
 
     def report(self, text: str) -> None:
         print(text)
+
+    def enemy_turn(self) -> None:
+        for obj in self.active_map.entities:
+            if obj.fighter is None:
+                continue
+            if obj is self.player:
+                continue
+            obj.fighter.ai(self, obj)

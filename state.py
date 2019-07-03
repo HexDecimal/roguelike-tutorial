@@ -89,3 +89,4 @@ class GameState(State):
     def cmd_move(self, x: int, y: int) -> None:
         """Move the player entity."""
         action.move(self.model, self.model.player, (x, y))
+        self.model.enemy_turn()

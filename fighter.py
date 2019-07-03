@@ -1,5 +1,7 @@
 from typing import Tuple
 
+import action
+
 
 class Fighter:
     name: str = "<Unnamed>"
@@ -9,6 +11,8 @@ class Fighter:
     hp: int = 0
     power: int = 0
     defense: int = 0
+
+    ai = staticmethod(action.attack_player)
 
     def __init__(self) -> None:
         self.max_hp = self.hp
