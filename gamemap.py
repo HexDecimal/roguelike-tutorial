@@ -14,6 +14,8 @@ FLOOR = 1
 
 
 class Room:
+    """Holds data and methods used to generate rooms."""
+
     def __init__(self, x: int, y: int, width: int, height: int):
         self.x1 = x
         self.y1 = y
@@ -39,7 +41,7 @@ class Room:
         """Return the index for the rooms center coordinate."""
         return (self.x1 + self.x2) // 2, (self.y1 + self.y2) // 2
 
-    def intersects(self, other: "Room") -> bool:
+    def intersects(self, other: Room) -> bool:
         """Return True if this room intersects with another."""
         return (
             self.x1 <= other.x2
@@ -48,7 +50,7 @@ class Room:
             and self.y2 >= other.y1
         )
 
-    def distance_to(self, other: "Room") -> float:
+    def distance_to(self, other: Room) -> float:
         """Return an approximate distance from this room to another."""
         x, y = self.center
         other_x, other_y = other.center
@@ -71,6 +73,7 @@ class Room:
 
 
 class GameMap:
+    """An object which holds the tile and entity data for a single floor."""
 
     COLOR = {
         "dark_wall": (0, 0, 100),
@@ -92,6 +95,7 @@ class GameMap:
         self.rooms: List[Room] = []
 
     def generate(self) -> None:
+        """Perform random dungeon generation."""
         self.tiles[...] = WALL
         self.rooms = []
         self.entities = []
@@ -169,6 +173,7 @@ class GameMap:
         self.explored |= self.visible
 
     def render(self, console: tcod.console.Console) -> None:
+        """Render this maps contents onto a console."""
         console.tiles["ch"][: self.width, : self.height] = ord(" ")
 
         dark = np.where(

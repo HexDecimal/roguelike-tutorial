@@ -39,5 +39,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     if not sys.warnoptions:
-        warnings.simplefilter("default")
+        warnings.simplefilter("default")  # Show all warnings once by default.
     main()

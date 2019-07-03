@@ -57,6 +57,7 @@ class GameState(tcod.event.EventDispatch):
         raise SystemExit()
 
     def cmd_move(self, x: int, y: int) -> None:
+        """Move the player entity."""
         player = self.active_map.player
         target = self.active_map.fighter_at(*player.relative(x, y))
         if not self.active_map.is_blocked(*player.relative(x, y)):
