@@ -15,7 +15,7 @@ def main() -> None:
     screen_height = 50
     map_width, map_height = 80, 45
 
-    tcod.console_set_custom_font("cp437-14.png", tcod.FONT_LAYOUT_CP437, 32, 8)
+    tcod.console_set_custom_font("data/cp437-14.png", tcod.FONT_LAYOUT_CP437, 32, 8)
 
     with tcod.console_init_root(
         screen_width,
