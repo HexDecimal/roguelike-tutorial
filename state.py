@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Tuple, TYPE_CHECKING
 
 import tcod
+import tcod.console
 import tcod.event
 
 import action
@@ -10,6 +11,24 @@ import action
 if TYPE_CHECKING:
     import gamemap
     import model
+
+
+def render_bar(
+    console: tcod.console.Console,
+    x: int,
+    y: int,
+    width: int,
+    text: str,
+    fullness: float,
+    fg: Tuple[int, int, int],
+    bg: Tuple[int, int, int],
+) -> None:
+    """Render a filled bar with centered text."""
+    console.print(x, y, text.center(width)[:width], fg=(255, 255, 255))
+    bar_bg = console.tiles["bg"][x : x + width, y]
+    bar_bg[:, :3] = bg
+    fill_width = max(0, min(width, int(fullness * width)))
+    bar_bg[:fill_width, :3] = fg
 
 
 class State(tcod.event.EventDispatch):
@@ -79,8 +98,23 @@ class GameState(State):
         return self.model.active_map
 
     def on_draw(self, console: tcod.console.Console) -> None:
+        bar_width = 20
+        player = self.model.player
+        assert player.fighter
+
         console.clear()
         self.active_map.render(console)
+
+        render_bar(
+            console,
+            1,
+            console.height - 2,
+            bar_width,
+            f"HP: {player.fighter.hp:02}/{player.fighter.max_hp:02}",
+            player.fighter.hp / player.fighter.max_hp,
+            (0x40, 0x80, 0),
+            (0x80, 0, 0),
+        )
 
     def cmd_quit(self) -> None:
         """Save and quit."""
