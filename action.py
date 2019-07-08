@@ -7,11 +7,10 @@ if TYPE_CHECKING:
     import model
 
 
-def move(
-    model: model.Model, actor: entity.Entity, xy_direction: Tuple[int, int]
+def move_to(
+    model: model.Model, actor: entity.Entity, xy_destination: Tuple[int, int]
 ) -> None:
-    """Move an entity in a direction, interaction with obstacles."""
-    xy_destination = actor.relative(*xy_direction)
+    """Move an entity to a position, interacting with obstacles."""
     map_ = model.active_map
     target = map_.fighter_at(*xy_destination)
     if not map_.is_blocked(*xy_destination):
@@ -19,6 +18,13 @@ def move(
         map_.update_fov()
     elif target:
         return attack(model, actor, target)
+
+
+def move(
+    model: model.Model, actor: entity.Entity, xy_direction: Tuple[int, int]
+) -> None:
+    """Move an entity in a direction, interaction with obstacles."""
+    move_to(model, actor, actor.relative(*xy_direction))
 
 
 def move_towards(

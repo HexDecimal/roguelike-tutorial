@@ -34,6 +34,11 @@ class Entity:
     def xy(self, xy: Tuple[int, int]) -> None:
         self.x, self.y = xy
 
+    @property
+    def blocking(self) -> bool:
+        """Return True if this entity blocks movement."""
+        return self.fighter is not None
+
     def distance_to(self, other: Entity) -> int:
         """Return the approximate number of steps needed to reach other."""
         return max(abs(self.x - other.x), abs(self.y - other.y))

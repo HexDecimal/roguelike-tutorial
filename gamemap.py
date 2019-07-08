@@ -37,15 +37,16 @@ class GameMap:
             return True
         if not self.tiles[x, y]:
             return True
-        if self.fighter_at(x, y):
-            return True
+        for e in self.entities:
+            if x == e.x and y == e.y and e.blocking:
+                return True
 
         return False
 
     def fighter_at(self, x: int, y: int) -> Optional[entity.Entity]:
         """Return any fighter entity found at this position."""
         for e in self.entities:
-            if x == e.x and y == e.y:
+            if x == e.x and y == e.y and e.fighter is not None:
                 return e
         return None
 
