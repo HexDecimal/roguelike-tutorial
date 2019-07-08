@@ -28,4 +28,4 @@ class Model:
                 continue
             if obj is self.player:
                 continue
-            obj.fighter.ai(self, obj)
+            obj.fighter.ai.take_turn(self, obj)

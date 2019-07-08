@@ -1,6 +1,6 @@
-from typing import Tuple
+from typing import Tuple, Type
 
-import action
+import ai
 
 
 class Fighter:
@@ -12,10 +12,11 @@ class Fighter:
     power: int = 0
     defense: int = 0
 
-    ai = staticmethod(action.attack_player)
+    AI: Type[ai.AI] = ai.BasicMonster
 
     def __init__(self) -> None:
         self.max_hp = self.hp
+        self.ai = self.AI()
 
 
 class Player(Fighter):
