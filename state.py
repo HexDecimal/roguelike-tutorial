@@ -116,6 +116,16 @@ class GameState(State):
             (0x80, 0, 0),
         )
 
+        x = bar_width + 2
+        y = console.height
+        log_width = console.width - x
+        i = 0
+        for text in self.model.log[::-1]:
+            i += tcod.console.get_height_rect(log_width, text)
+            if i >= 7:
+                break
+            console.print_box(x, y - i, log_width, 0, text)
+
     def cmd_quit(self) -> None:
         """Save and quit."""
         raise SystemExit()

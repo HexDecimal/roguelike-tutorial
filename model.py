@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 if TYPE_CHECKING:
     import gamemap
@@ -13,7 +13,7 @@ class Model:
     active_map: gamemap.GameMap
 
     def __init__(self) -> None:
-        pass
+        self.log: List[str] = []
 
     @property
     def player(self) -> entity.Entity:
@@ -21,6 +21,7 @@ class Model:
 
     def report(self, text: str) -> None:
         print(text)
+        self.log.append(text)
 
     def enemy_turn(self) -> None:
         for obj in self.active_map.entities:
