@@ -1,63 +1,57 @@
 from __future__ import annotations
 
 from typing import Tuple, TYPE_CHECKING
+from location import Location
+from fighter import Fighter
 
 if TYPE_CHECKING:
     import entity
-    import model
 
 
-def move_to(
-    model: model.Model, actor: entity.Entity, xy_destination: Tuple[int, int]
-) -> None:
+def move_to(actor: entity.Entity, xy_destination: Tuple[int, int]) -> None:
     """Move an entity to a position, interacting with obstacles."""
-    map_ = model.active_map
+    map_ = actor[Location].map
     target = map_.fighter_at(*xy_destination)
     if not map_.is_blocked(*xy_destination):
-        actor.xy = xy_destination
+        actor[Location] = map_[xy_destination]
         map_.update_fov()
     elif target:
-        return attack(model, actor, target)
+        return attack(actor, target)
 
 
-def move(
-    model: model.Model, actor: entity.Entity, xy_direction: Tuple[int, int]
-) -> None:
+def move(actor: entity.Entity, xy_direction: Tuple[int, int]) -> None:
     """Move an entity in a direction, interaction with obstacles."""
-    move_to(model, actor, actor.relative(*xy_direction))
+    move_to(actor, actor[Location].relative(*xy_direction))
 
 
-def move_towards(
-    model: model.Model, actor: entity.Entity, destination: Tuple[int, int]
-) -> None:
+def move_towards(actor: entity.Entity, destination: Tuple[int, int]) -> None:
     """Move towards and possibly interact with destination."""
-    dx = destination[0] - actor.x
-    dy = destination[1] - actor.y
+    dx = destination[0] - actor[Location].x
+    dy = destination[1] - actor[Location].y
     distance = max(abs(dx), abs(dy))
     dx = int(round(dx / distance))
     dy = int(round(dy / distance))
-    return move(model, actor, (dx, dy))
+    return move(actor, (dx, dy))
 
 
-def attack(model: model.Model, actor: entity.Entity, target: entity.Entity) -> None:
+def attack(actor: entity.Entity, target: entity.Entity) -> None:
     """Make this entities Fighter attack another entity."""
-    assert actor.distance_to(target) <= 1
-    assert actor.fighter
-    assert target.fighter
-    damage = actor.fighter.power - target.fighter.defense
+    model = actor[Location].map.model
+    assert actor[Location].distance_to(target[Location]) <= 1
+    damage = actor[Fighter].power - target[Fighter].defense
 
-    who_desc = f"{actor.fighter.name} attacks {target.fighter.name}"
+    who_desc = f"{actor[Fighter].name} attacks {target[Fighter].name}"
 
     if damage > 0:
-        target.fighter.hp -= damage
+        target[Fighter].hp -= damage
         model.report(f"{who_desc} for {damage} hit points.")
     else:
         model.report(f"{who_desc} but does no damage.")
-    if target.fighter.hp <= 0:
-        model.report(f"The {target.fighter.name} dies.")
-        model.active_map.entities.remove(target)
+    if target[Fighter].hp <= 0:
+        model.report(f"The {target[Fighter].name} dies.")
+        actor[Location].map.entities.remove(target)
 
 
-def attack_player(model: model.Model, actor: entity.Entity) -> None:
+def attack_player(actor: entity.Entity) -> None:
     """Move towards and attack the player."""
-    return move_towards(model, actor, model.player.xy)
+    return move_towards(actor, actor[Location].map.player[Location].xy)

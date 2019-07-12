@@ -7,6 +7,7 @@ import tcod.console
 import tcod.event
 
 import action
+from fighter import Fighter
 
 if TYPE_CHECKING:
     import gamemap
@@ -100,7 +101,6 @@ class GameState(State):
     def on_draw(self, console: tcod.console.Console) -> None:
         bar_width = 20
         player = self.model.player
-        assert player.fighter
 
         console.clear()
         self.active_map.render(console)
@@ -110,8 +110,8 @@ class GameState(State):
             1,
             console.height - 2,
             bar_width,
-            f"HP: {player.fighter.hp:02}/{player.fighter.max_hp:02}",
-            player.fighter.hp / player.fighter.max_hp,
+            f"HP: {player[Fighter].hp:02}/{player[Fighter].max_hp:02}",
+            player[Fighter].hp / player[Fighter].max_hp,
             (0x40, 0x80, 0),
             (0x80, 0, 0),
         )
@@ -132,5 +132,5 @@ class GameState(State):
 
     def cmd_move(self, x: int, y: int) -> None:
         """Move the player entity."""
-        action.move(self.model, self.model.player, (x, y))
+        action.move(self.model.player, (x, y))
         self.model.enemy_turn()

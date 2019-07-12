@@ -1,13 +1,24 @@
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, Optional, Tuple, TYPE_CHECKING
 
 import numpy as np  # type: ignore
 import tcod
 
+from location import Location
+from fighter import Fighter
+
 if TYPE_CHECKING:
     import tcod.console
     import entity
+    from model import Model
+
+
+class MapLocation(Location):
+    def __init__(self, gamemap: GameMap, x: int, y: int):
+        self.map = gamemap
+        self.x = x
+        self.y = y
 
 
 class GameMap:
@@ -20,6 +31,7 @@ class GameMap:
         "light_ground": (200, 180, 50),
     }
 
+    model: Model
     player: entity.Entity
 
     def __init__(self, width: int, height: int):
@@ -38,7 +50,7 @@ class GameMap:
         if not self.tiles[x, y]:
             return True
         for e in self.entities:
-            if x == e.x and y == e.y and e.blocking:
+            if e[Location].xy == (x, y) and Fighter in e:
                 return True
 
         return False
@@ -46,7 +58,9 @@ class GameMap:
     def fighter_at(self, x: int, y: int) -> Optional[entity.Entity]:
         """Return any fighter entity found at this position."""
         for e in self.entities:
-            if x == e.x and y == e.y and e.fighter is not None:
+            if Fighter not in e:
+                continue
+            if e[Location].xy == (x, y):
                 return e
         return None
 
@@ -54,7 +68,7 @@ class GameMap:
         """Update the field of view around the player."""
         self.visible = tcod.map.compute_fov(
             transparency=self.tiles,
-            pov=(self.player.x, self.player.y),
+            pov=self.player[Location].xy,
             radius=10,
             light_walls=True,
             algorithm=tcod.FOV_RESTRICTIVE,
@@ -82,9 +96,15 @@ class GameMap:
         )
 
         for obj in self.entities:
-            if not (0 <= obj.x < console.width and 0 <= obj.y < console.height):
+            if not obj[Fighter]:
                 continue
-            if not self.visible[obj.x, obj.y]:
+            x, y = xy = obj[Location].xy
+            if not (0 <= xy[0] < console.width and 0 <= xy[1] < console.height):
                 continue
-            console.tiles["ch"][obj.x, obj.y] = obj.char
-            console.tiles["fg"][obj.x, obj.y, :3] = obj.color
+            if not self.visible[xy]:
+                continue
+            console.tiles["ch"][xy] = obj[Fighter].char
+            console.tiles["fg"][x, y, :3] = obj[Fighter].color
+
+    def __getitem__(self, key: Tuple[int, int]) -> MapLocation:
+        return MapLocation(self, *key)

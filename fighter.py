@@ -1,9 +1,16 @@
-from typing import Tuple, Type
+from __future__ import annotations
+
+from typing import Optional, Tuple, Type, TYPE_CHECKING
 
 import ai
+import component
+import entity
+
+if TYPE_CHECKING:
+    import location
 
 
-class Fighter:
+class Fighter(component.Component, base_component=True):
     name: str = "<Unnamed>"
     char: int = ord("!")
     color: Tuple[int, int, int] = (255, 255, 255)
@@ -12,11 +19,17 @@ class Fighter:
     power: int = 0
     defense: int = 0
 
-    AI: Type[ai.AI] = ai.BasicMonster
+    AI: Optional[Type[ai.AI]] = None
 
     def __init__(self) -> None:
         self.max_hp = self.hp
-        self.ai = self.AI()
+
+    @classmethod
+    def spawn(cls, location: location.Location) -> entity.Entity:
+        AI = cls.AI if cls.AI is not None else ai.BasicMonster
+        e = entity.Entity((location, cls(), AI()))
+        location.map.entities.append(e)
+        return e
 
 
 class Player(Fighter):

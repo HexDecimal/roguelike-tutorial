@@ -27,6 +27,7 @@ def main() -> None:
     ) as console:
         model_ = model.Model()
         model_.active_map = procgen.generate(map_width, map_height)
+        model_.active_map.model = model_
         current_state = state.GameState(model_)
         current_state.run(console)
 

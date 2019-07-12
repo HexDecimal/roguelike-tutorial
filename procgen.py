@@ -6,7 +6,6 @@ from typing import List, Tuple, Type
 import numpy as np  # type: ignore
 import tcod
 
-import entity
 import fighter
 import gamemap
 
@@ -70,7 +69,7 @@ class Room:
                 monsterCls = fighter.Orc
             else:
                 monsterCls = fighter.Troll
-            gamemap.entities.append(entity.Entity(x, y, monsterCls()))
+            monsterCls.spawn(gamemap[x, y])
 
 
 def generate(width: int, height: int) -> gamemap.GameMap:
@@ -118,7 +117,7 @@ def generate(width: int, height: int) -> gamemap.GameMap:
         room.place_entities(gm)
 
     # Add player to the first room.
-    gm.player = entity.Entity(*rooms[0].center, fighter.Player())
+    gm.player = fighter.Player.spawn(gm[rooms[0].center])
     gm.entities.append(gm.player)
     gm.update_fov()
     return gm
