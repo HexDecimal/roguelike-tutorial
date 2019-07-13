@@ -1,16 +1,34 @@
 from __future__ import annotations
 
 import random
-from typing import List, Tuple, Type
+from typing import List, Tuple, Type, TYPE_CHECKING
 
 import numpy as np  # type: ignore
 import tcod
 
+import ai
+import component
 import fighter
 import gamemap
+from entity import Entity
+import inventory
+
+if TYPE_CHECKING:
+    from location import Location
 
 WALL = 0
 FLOOR = 1
+
+
+def spawn(location: Location, *components: component.Component) -> Entity:
+    entity = Entity((location, *components))
+    if fighter.Fighter in entity:
+        if ai.AI not in entity:
+            f = entity[fighter.Fighter]
+            entity[ai.AI] = f.AI() if f.AI is not None else ai.BasicMonster()
+        entity[inventory.Inventory] = inventory.Inventory()
+    location.map.entities.append(entity)
+    return entity
 
 
 class Room:
@@ -69,7 +87,7 @@ class Room:
                 monsterCls = fighter.Orc
             else:
                 monsterCls = fighter.Troll
-            monsterCls.spawn(gamemap[x, y])
+            spawn(gamemap[x, y], monsterCls())
 
 
 def generate(width: int, height: int) -> gamemap.GameMap:
@@ -113,11 +131,12 @@ def generate(width: int, height: int) -> gamemap.GameMap:
             gm.tiles[tcod.line_where(*t_middle, *t_end)] = FLOOR
         rooms.append(new_room)
 
+    # Add player to the first room.
+    gm.player = spawn(gm[rooms[0].center], fighter.Player())
+    gm.entities.append(gm.player)
+
     for room in rooms:
         room.place_entities(gm)
 
-    # Add player to the first room.
-    gm.player = fighter.Player.spawn(gm[rooms[0].center])
-    gm.entities.append(gm.player)
     gm.update_fov()
     return gm

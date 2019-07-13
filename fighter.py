@@ -2,12 +2,10 @@ from __future__ import annotations
 
 from typing import Optional, Tuple, Type, TYPE_CHECKING
 
-import ai
 import component
-import entity
 
 if TYPE_CHECKING:
-    import location
+    import ai
 
 
 class Fighter(component.Component, base_component=True):
@@ -23,13 +21,6 @@ class Fighter(component.Component, base_component=True):
 
     def __init__(self) -> None:
         self.max_hp = self.hp
-
-    @classmethod
-    def spawn(cls, location: location.Location) -> entity.Entity:
-        AI = cls.AI if cls.AI is not None else ai.BasicMonster
-        e = entity.Entity((location, cls(), AI()))
-        location.map.entities.append(e)
-        return e
 
 
 class Player(Fighter):
