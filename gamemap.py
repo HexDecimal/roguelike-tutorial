@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from typing import List, Optional, Tuple, TYPE_CHECKING
+import collections
+from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 
 import numpy as np  # type: ignore
 import tcod
 
 from location import Location
 from fighter import Fighter
+from item import Item
 
 if TYPE_CHECKING:
     import tcod.console
@@ -95,16 +97,24 @@ class GameMap:
             (0, 0, 0),
         )
 
+        visible_objs: Dict[
+            Tuple[int, int], List[entity.Entity]
+        ] = collections.defaultdict(list)
         for obj in self.entities:
-            if not obj[Fighter]:
+            if Fighter not in obj and Item not in obj:
                 continue
-            x, y = xy = obj[Location].xy
+            xy = obj[Location].xy
             if not (0 <= xy[0] < console.width and 0 <= xy[1] < console.height):
                 continue
             if not self.visible[xy]:
                 continue
-            console.tiles["ch"][xy] = obj[Fighter].char
-            console.tiles["fg"][x, y, :3] = obj[Fighter].color
+            visible_objs[xy].append(obj)
+
+        for xy, objs in visible_objs.items():
+            graphics = [o[Item] if Item in o else o[Fighter] for o in objs]
+            graphic = max(graphics, key=lambda x: x.render_order)
+            console.tiles["ch"][xy] = graphic.char
+            console.tiles["fg"][xy[0], xy[1], :3] = graphic.color
 
     def __getitem__(self, key: Tuple[int, int]) -> MapLocation:
         return MapLocation(self, *key)

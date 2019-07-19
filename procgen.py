@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import List, Tuple, Type, TYPE_CHECKING
+from typing import Iterator, List, Tuple, Type, TYPE_CHECKING
 
 import numpy as np  # type: ignore
 import tcod
@@ -12,6 +12,7 @@ import fighter
 import gamemap
 from entity import Entity
 import inventory
+import item
 
 if TYPE_CHECKING:
     from location import Location
@@ -74,20 +75,31 @@ class Room:
         other_x, other_y = other.center
         return abs(other_x - x) + abs(other_y - y)
 
-    def place_entities(self, gamemap: gamemap.GameMap) -> None:
-        """Spawn entities within this room."""
-        monsters = random.randint(0, 3)
-        for _ in range(monsters):
+    def get_free_spaces(
+        self, gamemap: gamemap.GameMap, number: int
+    ) -> Iterator[Tuple[int, int]]:
+        """Iterate over the x,y coordinates of up to `number` spaces."""
+        for _ in range(number):
             x = random.randint(self.x1 + 1, self.x2 - 2)
             y = random.randint(self.y1 + 1, self.y2 - 2)
             if gamemap.is_blocked(x, y):
                 continue
+            yield x, y
+
+    def place_entities(self, gamemap: gamemap.GameMap) -> None:
+        """Spawn entities within this room."""
+        monsters = random.randint(0, 3)
+        items = random.randint(0, 2)
+        for xy in self.get_free_spaces(gamemap, monsters):
             monsterCls: Type[fighter.Fighter]
             if random.randint(0, 100) < 80:
                 monsterCls = fighter.Orc
             else:
                 monsterCls = fighter.Troll
-            spawn(gamemap[x, y], monsterCls())
+            spawn(gamemap[xy], monsterCls())
+
+        for xy in self.get_free_spaces(gamemap, items):
+            spawn(gamemap[xy], item.HealingPotion())
 
 
 def generate(width: int, height: int) -> gamemap.GameMap:

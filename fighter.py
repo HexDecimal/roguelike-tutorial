@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple, Type, TYPE_CHECKING
+from typing import Optional, Type, TYPE_CHECKING
 
 import component
+import graphic
 
 if TYPE_CHECKING:
     import ai
 
 
-class Fighter(component.Component, base_component=True):
+class Fighter(graphic.Graphic, component.Component, base_component=True):
+    render_order = 2
     name: str = "<Unnamed>"
-    char: int = ord("!")
-    color: Tuple[int, int, int] = (255, 255, 255)
 
     hp: int = 0
     power: int = 0
