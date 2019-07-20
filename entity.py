@@ -23,5 +23,8 @@ class Entity:
     def __setitem__(self, key: Type[T], value: T) -> None:
         self._components[key] = value
 
+    def __delitem__(self, key: Type[T]) -> None:
+        del self._components[key]
+
     def __contains__(self, key: Type[T]) -> bool:
         return key in self._components

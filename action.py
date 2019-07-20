@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from typing import Tuple, TYPE_CHECKING
+from inventory import Inventory
+from item import Item
 from location import Location
 from fighter import Fighter
 
@@ -55,3 +57,13 @@ def attack(actor: entity.Entity, target: entity.Entity) -> None:
 def attack_player(actor: entity.Entity) -> None:
     """Move towards and attack the player."""
     return move_towards(actor, actor[Location].map.player[Location].xy)
+
+
+def pickup(actor: entity.Entity) -> None:
+    model = actor[Location].map.model
+    for obj in actor[Location].map.entities_at(*actor[Location].xy):
+        if Item in obj:
+            model.report(f"{actor[Fighter].name} pick up the {obj[Item].name}.")
+            actor[Inventory].take(obj)
+            return
+    model.report("There is nothing to pick up.")

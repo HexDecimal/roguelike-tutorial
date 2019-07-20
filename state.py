@@ -60,7 +60,7 @@ class State(tcod.event.EventDispatch):
         tcod.event.K_n: (1, 1),
     }
 
-    COMMAND_KEYS = {tcod.event.K_ESCAPE: "quit"}
+    COMMAND_KEYS = {tcod.event.K_ESCAPE: "quit", tcod.event.K_g: "pickup"}
 
     def run(self, console: tcod.console.Console) -> None:
         while True:
@@ -86,6 +86,9 @@ class State(tcod.event.EventDispatch):
         raise SystemExit()
 
     def cmd_move(self, x: int, y: int) -> None:
+        pass
+
+    def cmd_pickup(self) -> None:
         pass
 
 
@@ -133,4 +136,8 @@ class GameState(State):
     def cmd_move(self, x: int, y: int) -> None:
         """Move the player entity."""
         action.move(self.model.player, (x, y))
+        self.model.enemy_turn()
+
+    def cmd_pickup(self) -> None:
+        action.pickup(self.model.player)
         self.model.enemy_turn()

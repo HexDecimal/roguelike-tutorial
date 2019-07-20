@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import collections
-from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
+from typing import Dict, Iterator, List, Optional, Tuple, TYPE_CHECKING
 
 import numpy as np  # type: ignore
 import tcod
@@ -65,6 +65,12 @@ class GameMap:
             if e[Location].xy == (x, y):
                 return e
         return None
+
+    def entities_at(self, x: int, y: int) -> Iterator[entity.Entity]:
+        """Return all entities at x,y."""
+        for e in self.entities:
+            if e[Location].xy == (x, y):
+                yield e
 
     def update_fov(self) -> None:
         """Update the field of view around the player."""
