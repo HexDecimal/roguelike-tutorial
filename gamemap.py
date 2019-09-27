@@ -85,7 +85,7 @@ class GameMap:
 
     def render(self, console: tcod.console.Console) -> None:
         """Render this maps contents onto a console."""
-        console.tiles["ch"][: self.width, : self.height] = ord(" ")
+        console.tiles2["ch"][: self.width, : self.height] = ord(" ")
 
         dark = np.where(
             self.tiles[..., np.newaxis],
@@ -97,7 +97,7 @@ class GameMap:
             self.COLOR["light_ground"],
             self.COLOR["light_wall"],
         )
-        console.tiles["bg"][: self.width, : self.height, :3] = np.select(
+        console.tiles2["bg"][: self.width, : self.height] = np.select(
             (self.visible[..., np.newaxis], self.explored[..., np.newaxis]),
             (light, dark),
             (0, 0, 0),
@@ -119,8 +119,8 @@ class GameMap:
         for xy, objs in visible_objs.items():
             graphics = [o[Item] if Item in o else o[Fighter] for o in objs]
             graphic = max(graphics, key=lambda x: x.render_order)
-            console.tiles["ch"][xy] = graphic.char
-            console.tiles["fg"][xy[0], xy[1], :3] = graphic.color
+            console.tiles2["ch"][xy] = graphic.char
+            console.tiles2["fg"][xy[0], xy[1]] = graphic.color
 
     def __getitem__(self, key: Tuple[int, int]) -> MapLocation:
         return MapLocation(self, *key)

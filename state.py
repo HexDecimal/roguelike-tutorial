@@ -26,10 +26,10 @@ def render_bar(
 ) -> None:
     """Render a filled bar with centered text."""
     console.print(x, y, text.center(width)[:width], fg=(255, 255, 255))
-    bar_bg = console.tiles["bg"][x : x + width, y]
-    bar_bg[:, :3] = bg
+    bar_bg = console.tiles2["bg"][x : x + width, y]
+    bar_bg[...] = bg
     fill_width = max(0, min(width, int(fullness * width)))
-    bar_bg[:fill_width, :3] = fg
+    bar_bg[:fill_width] = fg
 
 
 class State(tcod.event.EventDispatch):
