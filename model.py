@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import List, TYPE_CHECKING
 
-from ai import AI
-
 if TYPE_CHECKING:
     import gamemap
     import entity
@@ -27,8 +25,8 @@ class Model:
 
     def enemy_turn(self) -> None:
         for obj in self.active_map.entities:
-            if AI not in obj:
+            if not obj.ai:
                 continue
             if obj is self.player:
                 continue
-            obj[AI].take_turn(obj)
+            obj.ai.take_turn(obj)

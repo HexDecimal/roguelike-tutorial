@@ -7,8 +7,6 @@ import tcod.path
 
 import action
 import component
-from location import Location
-from fighter import Fighter
 
 if TYPE_CHECKING:
     import entity
@@ -21,13 +19,14 @@ class AI(component.Component, base_component=True):
     def get_path(
         self, owner: entity.Entity, target_xy: Tuple[int, int]
     ) -> List[Tuple[int, int]]:
-        map_ = owner[Location].map
+        assert owner.location
+        map_ = owner.location.map
         walkable = np.copy(map_.tiles)
-        blocker_pos = [e[Location].xy for e in map_.entities if Fighter in e]
+        blocker_pos = [e.location.xy for e in map_.entities if e.fighter and e.location]
         blocker_index = tuple(np.transpose(blocker_pos))
         walkable[blocker_index] = False
         walkable[target_xy] = True
-        return tcod.path.AStar(walkable).get_path(*owner[Location].xy, *target_xy)
+        return tcod.path.AStar(walkable).get_path(*owner.location.xy, *target_xy)
 
 
 class BasicMonster(AI):
@@ -35,15 +34,17 @@ class BasicMonster(AI):
         self.path: List[Tuple[int, int]] = []
 
     def take_turn(self, owner: entity.Entity) -> None:
-        map_ = owner[Location].map
-        if map_.visible[owner[Location].xy]:
-            self.path = self.get_path(owner, map_.player[Location].xy)
+        assert owner.location
+        map_ = owner.location.map
+        assert map_.player.location
+        if map_.visible[owner.location.xy]:
+            self.path = self.get_path(owner, map_.player.location.xy)
             if len(self.path) >= 25:
                 self.path = []
-                action.move_towards(owner, map_.player[Location].xy)
+                action.move_towards(owner, map_.player.location.xy)
         if not self.path:
             return
-        if owner[Location].distance_to(map_.player[Location]) <= 1:
+        if owner.location.distance_to(map_.player.location) <= 1:
             action.attack_player(owner)
         else:
             action.move_to(owner, self.path.pop(0))

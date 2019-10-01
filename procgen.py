@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import random
-from typing import Iterator, List, Tuple, Type, TYPE_CHECKING
+from typing import Any, Iterator, List, Tuple, Type, TYPE_CHECKING
 
 import numpy as np  # type: ignore
 import tcod
 
 import ai
-import component
 import fighter
 import gamemap
 from entity import Entity
@@ -21,13 +20,16 @@ WALL = 0
 FLOOR = 1
 
 
-def spawn(location: Location, *components: component.Component) -> Entity:
-    entity = Entity((location, *components))
-    if fighter.Fighter in entity:
-        if ai.AI not in entity:
-            f = entity[fighter.Fighter]
-            entity[ai.AI] = f.AI() if f.AI is not None else ai.BasicMonster()
-        entity[inventory.Inventory] = inventory.Inventory()
+def spawn(location: Location, **components: Any) -> Entity:
+    entity = Entity(location=location, **components)
+    if entity.fighter:
+        if not entity.ai:
+            f = entity.fighter
+            entity.ai = f.AI() if f.AI is not None else ai.BasicMonster()
+        entity.inventory = inventory.Inventory()
+        entity.graphic = entity.fighter
+    if entity.item:
+        entity.graphic = entity.item
     location.map.entities.append(entity)
     return entity
 
@@ -96,10 +98,10 @@ class Room:
                 monsterCls = fighter.Orc
             else:
                 monsterCls = fighter.Troll
-            spawn(gamemap[xy], monsterCls())
+            spawn(gamemap[xy], fighter=monsterCls())
 
         for xy in self.get_free_spaces(gamemap, items):
-            spawn(gamemap[xy], item.HealingPotion())
+            spawn(gamemap[xy], item=item.HealingPotion())
 
 
 def generate(width: int, height: int) -> gamemap.GameMap:
@@ -144,7 +146,7 @@ def generate(width: int, height: int) -> gamemap.GameMap:
         rooms.append(new_room)
 
     # Add player to the first room.
-    gm.player = spawn(gm[rooms[0].center], fighter.Player())
+    gm.player = spawn(gm[rooms[0].center], fighter=fighter.Player())
     gm.entities.append(gm.player)
 
     for room in rooms:

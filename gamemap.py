@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-import collections
+from collections import defaultdict
 from typing import Dict, Iterator, List, Optional, Tuple, TYPE_CHECKING
 
 import numpy as np  # type: ignore
 import tcod
 
 from location import Location
-from fighter import Fighter
-from item import Item
 
 if TYPE_CHECKING:
     import tcod.console
     import entity
+    from graphic import Graphic
     from model import Model
 
 
@@ -52,7 +51,7 @@ class GameMap:
         if not self.tiles[x, y]:
             return True
         for e in self.entities:
-            if e[Location].xy == (x, y) and Fighter in e:
+            if e.fighter and e.location and e.location.xy == (x, y):
                 return True
 
         return False
@@ -60,23 +59,23 @@ class GameMap:
     def fighter_at(self, x: int, y: int) -> Optional[entity.Entity]:
         """Return any fighter entity found at this position."""
         for e in self.entities:
-            if Fighter not in e:
-                continue
-            if e[Location].xy == (x, y):
+            if e.fighter and e.location and e.location.xy == (x, y):
                 return e
         return None
 
     def entities_at(self, x: int, y: int) -> Iterator[entity.Entity]:
         """Return all entities at x,y."""
         for e in self.entities:
-            if e[Location].xy == (x, y):
+            if e.location and e.location.xy == (x, y):
                 yield e
 
     def update_fov(self) -> None:
         """Update the field of view around the player."""
+        if not self.player.location:
+            return
         self.visible = tcod.map.compute_fov(
             transparency=self.tiles,
-            pov=self.player[Location].xy,
+            pov=self.player.location.xy,
             radius=10,
             light_walls=True,
             algorithm=tcod.FOV_RESTRICTIVE,
@@ -103,24 +102,20 @@ class GameMap:
             (0, 0, 0),
         )
 
-        visible_objs: Dict[
-            Tuple[int, int], List[entity.Entity]
-        ] = collections.defaultdict(list)
+        visible_objs: Dict[Tuple[int, int], List[Graphic]] = defaultdict(list)
         for obj in self.entities:
-            if Fighter not in obj and Item not in obj:
+            if obj.graphic is None or obj.location is None:
                 continue
-            xy = obj[Location].xy
+            xy = obj.location.xy
             if not (0 <= xy[0] < console.width and 0 <= xy[1] < console.height):
                 continue
             if not self.visible[xy]:
                 continue
-            visible_objs[xy].append(obj)
+            visible_objs[xy].append(obj.graphic)
 
-        for xy, objs in visible_objs.items():
-            graphics = [o[Item] if Item in o else o[Fighter] for o in objs]
+        for xy, graphics in visible_objs.items():
             graphic = max(graphics, key=lambda x: x.render_order)
-            console.tiles2["ch"][xy] = graphic.char
-            console.tiles2["fg"][xy[0], xy[1]] = graphic.color
+            console.tiles2[["ch", "fg"]][xy] = graphic.char, graphic.color
 
     def __getitem__(self, key: Tuple[int, int]) -> MapLocation:
         return MapLocation(self, *key)

@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import List, TYPE_CHECKING
 
 import component
-from location import Location
 
 if TYPE_CHECKING:
     from entity import Entity
@@ -17,5 +16,6 @@ class Inventory(component.Component, base_component=True):
 
     def take(self, entity: Entity) -> None:
         self.contents.append(entity)
-        entity[Location].map.entities.remove(entity)
-        del entity[Location]
+        assert entity.location
+        entity.location.map.entities.remove(entity)
+        entity.location = None
