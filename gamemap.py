@@ -124,7 +124,7 @@ class GameMap:
             visible_objs[xy].append(obj.graphic)
 
         for xy, graphics in visible_objs.items():
-            graphic = max(graphics, key=lambda x: x.render_order)
+            graphic = min(graphics)
             console.tiles2[["ch", "fg"]][xy] = graphic.char, graphic.color
 
     def __getitem__(self, key: Tuple[int, int]) -> MapLocation:

@@ -61,7 +61,7 @@ def attack(actor: entity.Entity, target: entity.Entity) -> None:
         assert target.graphic
         target.graphic.char = ord("%")
         target.graphic.color = (127, 0, 0)
-        target.graphic.render_order = 0
+        target.graphic.render_order = 2
 
 
 def attack_player(actor: entity.Entity) -> None:
