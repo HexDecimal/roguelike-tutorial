@@ -10,7 +10,6 @@ if TYPE_CHECKING:
 
 class Fighter(graphic.Graphic):
     render_order = 2
-    name: str = "<Unnamed>"
 
     hp: int = 0
     power: int = 0

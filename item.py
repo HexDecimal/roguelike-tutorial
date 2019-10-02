@@ -5,7 +5,6 @@ import graphic
 
 class Item(graphic.Graphic):
     render_order = 1
-    name: str = "<Unnamed>"
 
 
 class HealingPotion(Item):
