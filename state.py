@@ -129,15 +129,23 @@ class GameState(State):
                 break
             console.print_box(x, y - i, log_width, 0, text)
 
+    def is_player_dead(self) -> bool:
+        """True if the player had died."""
+        return not self.model.player.fighter or self.model.player.fighter.hp <= 0
+
     def cmd_quit(self) -> None:
         """Save and quit."""
         raise SystemExit()
 
     def cmd_move(self, x: int, y: int) -> None:
         """Move the player entity."""
+        if self.is_player_dead():
+            return
         action.move(self.model.player, (x, y))
         self.model.enemy_turn()
 
     def cmd_pickup(self) -> None:
+        if self.is_player_dead():
+            return
         action.pickup(self.model.player)
         self.model.enemy_turn()

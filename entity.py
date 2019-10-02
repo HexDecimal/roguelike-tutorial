@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 @dataclass
 class Entity:
     """Object used to tie a variety of components to a location on a GameMap."""
+
     location: Optional[Location] = None
     graphic: Optional[Graphic] = None
     fighter: Optional[Fighter] = None

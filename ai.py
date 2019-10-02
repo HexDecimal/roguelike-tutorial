@@ -22,7 +22,11 @@ class AI(component.Component, base_component=True):
         assert owner.location
         map_ = owner.location.map
         walkable = np.copy(map_.tiles)
-        blocker_pos = [e.location.xy for e in map_.entities if e.fighter and e.location]
+        blocker_pos = [
+            e.location.xy
+            for e in map_.entities
+            if e.fighter and e.fighter.hp > 0 and e.location
+        ]
         blocker_index = tuple(np.transpose(blocker_pos))
         walkable[blocker_index] = False
         walkable[target_xy] = True

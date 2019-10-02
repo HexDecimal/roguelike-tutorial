@@ -53,8 +53,15 @@ def attack(actor: entity.Entity, target: entity.Entity) -> None:
     else:
         model.report(f"{who_desc} but does no damage.")
     if target.fighter.hp <= 0:
-        model.report(f"The {target.fighter.name} dies.")
-        actor.location.map.entities.remove(target)
+        if target == actor.location.map.player:
+            model.report(f"You die.")
+        else:
+            model.report(f"The {target.fighter.name} dies.")
+        target.ai = None
+        assert target.graphic
+        target.graphic.char = ord("%")
+        target.graphic.color = (127, 0, 0)
+        target.graphic.render_order = 0
 
 
 def attack_player(actor: entity.Entity) -> None:
