@@ -6,13 +6,12 @@ import numpy as np  # type: ignore
 import tcod.path
 
 import action
-import component
 
 if TYPE_CHECKING:
     import entity
 
 
-class AI(component.Component, base_component=True):
+class AI:
     def take_turn(self, owner: entity.Entity) -> None:
         raise NotImplementedError()
 

@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from typing import Optional, Type, TYPE_CHECKING
 
-import component
 import graphic
 
 if TYPE_CHECKING:
     import ai
 
 
-class Fighter(graphic.Graphic, component.Component, base_component=True):
+class Fighter(graphic.Graphic):
     render_order = 2
     name: str = "<Unnamed>"
 

@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import component
 import graphic
 
 
-class Item(graphic.Graphic, component.Component, base_component=True):
+class Item(graphic.Graphic):
     render_order = 1
     name: str = "<Unnamed>"
 

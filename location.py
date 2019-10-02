@@ -2,13 +2,11 @@ from __future__ import annotations
 
 from typing import Tuple, TYPE_CHECKING
 
-import component
-
 if TYPE_CHECKING:
     import gamemap
 
 
-class Location(component.Component, base_component=True):
+class Location:
     map: gamemap.GameMap
     x: int
     y: int
