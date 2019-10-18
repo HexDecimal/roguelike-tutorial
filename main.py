@@ -6,7 +6,7 @@ import warnings
 import tcod
 
 import model
-import state
+import states
 import procgen
 
 
@@ -28,7 +28,7 @@ def main() -> None:
         model_ = model.Model()
         model_.active_map = procgen.generate(map_width, map_height)
         model_.active_map.model = model_
-        current_state = state.GameState(model_)
+        current_state = states.GameState(model_)
         current_state.run(console)
 
 
