@@ -5,7 +5,7 @@ from typing import List, Tuple, TYPE_CHECKING
 import numpy as np  # type: ignore
 import tcod.path
 
-import action
+import actions
 
 if TYPE_CHECKING:
     import entity
@@ -44,10 +44,10 @@ class BasicMonster(AI):
             self.path = self.get_path(owner, map_.player.location.xy)
             if len(self.path) >= 25:
                 self.path = []
-                action.move_towards(owner, map_.player.location.xy)
+                actions.MoveTowards(owner, map_.player.location.xy).act()
         if not self.path:
             return
-        if owner.location.distance_to(map_.player.location) <= 1:
-            action.attack_player(owner)
+        if owner.location.distance_to(*map_.player.location.xy) <= 1:
+            actions.AttackPlayer(owner).act()
         else:
-            action.move_to(owner, self.path.pop(0))
+            actions.MoveTo(owner, self.path.pop(0)).act()

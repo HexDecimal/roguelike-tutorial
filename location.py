@@ -19,9 +19,9 @@ class Location:
     def xy(self, xy: Tuple[int, int]) -> None:
         self.x, self.y = xy
 
-    def distance_to(self, other: Location) -> int:
-        """Return the approximate number of steps needed to reach other."""
-        return max(abs(self.x - other.x), abs(self.y - other.y))
+    def distance_to(self, x: int, y: int) -> int:
+        """Return the approximate number of steps needed to reach x,y."""
+        return max(abs(self.x - x), abs(self.y - y))
 
     def relative(self, x: int, y: int) -> Tuple[int, int]:
         """Return a coordinate relative to this entity."""

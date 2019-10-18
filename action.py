@@ -4,81 +4,50 @@ from typing import Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     import entity
+    from gamemap import GameMap
+    from location import Location
+    from model import Model
 
 
-def move_to(actor: entity.Entity, xy_destination: Tuple[int, int]) -> None:
-    """Move an entity to a position, interacting with obstacles."""
-    assert actor.location
-    map_ = actor.location.map
-    target = map_.fighter_at(*xy_destination)
-    if not map_.is_blocked(*xy_destination):
-        actor.location = map_[xy_destination]
-        map_.update_fov()
-    elif target:
-        return attack(actor, target)
+class Action:
+    def __init__(self, actor: entity.Entity):
+        self.actor = actor
+
+    def act(self) -> None:
+        raise NotImplementedError()
+
+    def is_player(self) -> bool:
+        """Return True if the active actor is the player entity."""
+        return self.location.map.player is self.actor
+
+    @property
+    def location(self) -> Location:
+        assert self.actor.location, self.actor
+        return self.actor.location
+
+    @property
+    def map(self) -> GameMap:
+        assert self.actor.location, self.actor
+        return self.actor.location.map
+
+    @property
+    def model(self) -> Model:
+        assert self.actor.location, self.actor
+        return self.actor.location.map.model
+
+    def report(self, msg: str) -> None:
+        return self.model.report(msg)
 
 
-def move(actor: entity.Entity, xy_direction: Tuple[int, int]) -> None:
-    """Move an entity in a direction, interaction with obstacles."""
-    assert actor.location
-    move_to(actor, actor.location.relative(*xy_direction))
+class ActionWithPosition(Action):
+    def __init__(self, actor: entity.Entity, position: Tuple[int, int]):
+        super().__init__(actor)
+        self.target_pos = position
 
 
-def move_towards(actor: entity.Entity, destination: Tuple[int, int]) -> None:
-    """Move towards and possibly interact with destination."""
-    assert actor.location
-    dx = destination[0] - actor.location.x
-    dy = destination[1] - actor.location.y
-    distance = max(abs(dx), abs(dy))
-    dx = int(round(dx / distance))
-    dy = int(round(dy / distance))
-    return move(actor, (dx, dy))
-
-
-def attack(actor: entity.Entity, target: entity.Entity) -> None:
-    """Make this entities Fighter attack another entity."""
-    assert actor.location
-    assert target.location
-    assert actor.fighter
-    assert target.fighter
-    model = actor.location.map.model
-    assert actor.location.distance_to(target.location) <= 1
-    damage = actor.fighter.power - target.fighter.defense
-
-    who_desc = f"{actor.fighter.name} attacks {target.fighter.name}"
-
-    if damage > 0:
-        target.fighter.hp -= damage
-        model.report(f"{who_desc} for {damage} hit points.")
-    else:
-        model.report(f"{who_desc} but does no damage.")
-    if target.fighter.hp <= 0:
-        if target == actor.location.map.player:
-            model.report(f"You die.")
-        else:
-            model.report(f"The {target.fighter.name} dies.")
-        target.ai = None
-        assert target.graphic
-        target.graphic.char = ord("%")
-        target.graphic.color = (127, 0, 0)
-        target.graphic.render_order = 2
-
-
-def attack_player(actor: entity.Entity) -> None:
-    """Move towards and attack the player."""
-    assert actor.location
-    assert actor.location.map.player.location
-    return move_towards(actor, actor.location.map.player.location.xy)
-
-
-def pickup(actor: entity.Entity) -> None:
-    assert actor.location
-    assert actor.fighter
-    assert actor.inventory
-    model = actor.location.map.model
-    for obj in actor.location.map.entities_at(*actor.location.xy):
-        if obj.item:
-            model.report(f"{actor.fighter.name} pick up the {obj.item.name}.")
-            actor.inventory.take(obj)
-            return
-    model.report("There is nothing to pick up.")
+class ActionWithDirection(ActionWithPosition):
+    def __init__(self, actor: entity.Entity, direction: Tuple[int, int]):
+        assert actor.location
+        position = actor.location.x + direction[0], actor.location.y + direction[1]
+        super().__init__(actor, position)
+        self.direction = direction

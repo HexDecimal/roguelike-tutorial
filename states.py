@@ -5,7 +5,7 @@ from typing import Tuple, TYPE_CHECKING
 import tcod
 import tcod.console
 
-import action
+import actions
 from state import State
 
 if TYPE_CHECKING:
@@ -81,11 +81,11 @@ class GameState(State):
         """Move the player entity."""
         if self.is_player_dead():
             return
-        action.move(self.model.player, (x, y))
+        actions.Move(self.model.player, (x, y)).act()
         self.model.enemy_turn()
 
     def cmd_pickup(self) -> None:
         if self.is_player_dead():
             return
-        action.pickup(self.model.player)
+        actions.Pickup(self.model.player).act()
         self.model.enemy_turn()
