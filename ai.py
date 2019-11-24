@@ -20,7 +20,7 @@ class AI:
     ) -> List[Tuple[int, int]]:
         assert owner.location
         map_ = owner.location.map
-        walkable = np.copy(map_.tiles)
+        walkable = np.copy(map_.tiles["move_cost"])
         blocker_pos = [
             e.location.xy
             for e in map_.entities

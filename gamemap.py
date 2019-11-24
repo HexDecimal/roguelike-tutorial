@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Dict, Iterator, List, Optional, Tuple, TYPE_CHECKING
+from typing import Dict, Iterator, List, NamedTuple, Optional, Tuple, TYPE_CHECKING
 
 import numpy as np  # type: ignore
 import tcod
@@ -14,6 +14,26 @@ if TYPE_CHECKING:
     from graphic import Graphic
     from model import Model
 
+# Data types for handling game map tiles:
+tile_graphic = np.dtype([("ch", np.int), ("fg", "3B"), ("bg", "3B")])
+tile_dt = np.dtype(
+    [
+        ("move_cost", np.uint8),
+        ("transparent", np.bool),
+        ("light", tile_graphic),
+        ("dark", tile_graphic),
+    ]
+)
+
+
+class Tile(NamedTuple):
+    """A NamedTuple type broadcastable to any tile_dt array."""
+
+    move_cost: int
+    transparent: bool
+    light: Tuple[int, Tuple[int, int, int], Tuple[int, int, int]]
+    dark: Tuple[int, Tuple[int, int, int], Tuple[int, int, int]]
+
 
 class MapLocation(Location):
     def __init__(self, gamemap: GameMap, x: int, y: int):
@@ -25,12 +45,7 @@ class MapLocation(Location):
 class GameMap:
     """An object which holds the tile and entity data for a single floor."""
 
-    COLOR = {
-        "dark_wall": (0, 0, 100),
-        "dark_ground": (50, 50, 150),
-        "light_wall": (130, 110, 50),
-        "light_ground": (200, 180, 50),
-    }
+    DARKNESS = np.asarray((0, (0, 0, 0), (0, 0, 0)), dtype=tile_graphic)
 
     model: Model
     player: entity.Entity
@@ -39,7 +54,7 @@ class GameMap:
         self.width = width
         self.height = height
         self.shape = width, height
-        self.tiles = np.zeros(self.shape, dtype=bool, order="F")
+        self.tiles = np.zeros(self.shape, dtype=tile_dt, order="F")
         self.explored = np.zeros(self.shape, dtype=bool, order="F")
         self.visible = np.zeros(self.shape, dtype=bool, order="F")
         self.entities: List[entity.Entity] = []
@@ -48,7 +63,7 @@ class GameMap:
         """Return True if this position is impassible."""
         if not (0 <= x < self.width and 0 <= y < self.height):
             return True
-        if not self.tiles[x, y]:
+        if not self.tiles[x, y]["move_cost"]:
             return True
         for e in self.entities:
             if (
@@ -84,7 +99,7 @@ class GameMap:
         if not self.player.location:
             return
         self.visible = tcod.map.compute_fov(
-            transparency=self.tiles,
+            transparency=self.tiles["transparent"],
             pov=self.player.location.xy,
             radius=10,
             light_walls=True,
@@ -94,22 +109,10 @@ class GameMap:
 
     def render(self, console: tcod.console.Console) -> None:
         """Render this maps contents onto a console."""
-        console.tiles2["ch"][: self.width, : self.height] = ord(" ")
-
-        dark = np.where(
-            self.tiles[..., np.newaxis],
-            self.COLOR["dark_ground"],
-            self.COLOR["dark_wall"],
-        )
-        light = np.where(
-            self.tiles[..., np.newaxis],
-            self.COLOR["light_ground"],
-            self.COLOR["light_wall"],
-        )
-        console.tiles2["bg"][: self.width, : self.height] = np.select(
-            (self.visible[..., np.newaxis], self.explored[..., np.newaxis]),
-            (light, dark),
-            (0, 0, 0),
+        console.tiles2[: self.width, : self.height] = np.select(
+            (self.visible, self.explored),
+            (self.tiles["light"], self.tiles["dark"]),
+            self.DARKNESS,
         )
 
         visible_objs: Dict[Tuple[int, int], List[Graphic]] = defaultdict(list)

@@ -16,8 +16,18 @@ import item
 if TYPE_CHECKING:
     from location import Location
 
-WALL = 0
-FLOOR = 1
+WALL = gamemap.Tile(
+    move_cost=0,
+    transparent=False,
+    light=(ord(" "), (255, 255, 255), (130, 110, 50)),
+    dark=(ord(" "), (255, 255, 255), (0, 0, 100)),
+)
+FLOOR = gamemap.Tile(
+    move_cost=1,
+    transparent=True,
+    light=(ord(" "), (255, 255, 255), (200, 180, 50)),
+    dark=(ord(" "), (255, 255, 255), (50, 50, 150)),
+)
 
 
 def spawn(location: Location, **components: Any) -> Entity:
