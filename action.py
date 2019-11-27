@@ -51,3 +51,9 @@ class ActionWithDirection(ActionWithPosition):
         position = actor.location.x + direction[0], actor.location.y + direction[1]
         super().__init__(actor, position)
         self.direction = direction
+
+
+class ActionWithEntity(Action):
+    def __init__(self, actor: entity.Entity, target: entity.Entity):
+        super().__init__(actor)
+        self.target = target

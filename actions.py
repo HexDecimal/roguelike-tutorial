@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from action import Action, ActionWithPosition, ActionWithDirection
+from action import Action, ActionWithPosition, ActionWithDirection, ActionWithEntity
 
 
 class MoveTo(ActionWithPosition):
@@ -86,3 +86,11 @@ class Pickup(Action):
                 self.actor.inventory.take(obj)
                 return
         self.report("There is nothing to pick up.")
+
+
+class ActivateItem(ActionWithEntity):
+    def act(self) -> None:
+        assert self.actor.inventory
+        assert self.target.item
+        assert self.target in self.actor.inventory.contents
+        self.target.item.activate(self)

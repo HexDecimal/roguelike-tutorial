@@ -7,6 +7,7 @@ import tcod.console
 
 import actions
 from state import State
+import inventory
 
 if TYPE_CHECKING:
     import gamemap
@@ -89,3 +90,8 @@ class GameState(State):
             return
         actions.Pickup(self.model.player).act()
         self.model.enemy_turn()
+
+    def cmd_inventory(self) -> None:
+        if self.is_player_dead():
+            return
+        inventory.InventoryMenu(self.model).push()

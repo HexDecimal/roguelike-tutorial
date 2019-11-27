@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+from typing import List
+
 import tcod
 import tcod.console
 import tcod.event
+
+stack: List[State] = []  # A stack of state objects.
 
 
 class State(tcod.event.EventDispatch):
@@ -33,14 +37,25 @@ class State(tcod.event.EventDispatch):
         tcod.event.K_n: (1, 1),
     }
 
-    COMMAND_KEYS = {tcod.event.K_ESCAPE: "quit", tcod.event.K_g: "pickup"}
+    COMMAND_KEYS = {
+        tcod.event.K_i: "inventory",
+        tcod.event.K_g: "pickup",
+        tcod.event.K_ESCAPE: "quit",
+    }
 
-    def run(self, console: tcod.console.Console) -> None:
-        while True:
-            self.on_draw(console)
-            tcod.console_flush()
-            for event in tcod.event.wait():
-                self.dispatch(event)
+    def push(self) -> None:
+        """Push this state on top of the stack of states."""
+        stack.append(self)
+
+    def pop(self) -> None:
+        assert self is stack[-1]
+        stack.pop()
+
+    @property
+    def parent(self) -> State:
+        """Return the state behind this one."""
+        # Assumes that the root state will never look for its own parent.
+        return stack[stack.index(self) - 1]
 
     def on_draw(self, console: tcod.console.Console) -> None:
         raise NotImplementedError()
@@ -63,3 +78,18 @@ class State(tcod.event.EventDispatch):
 
     def cmd_pickup(self) -> None:
         pass
+
+    def cmd_inventory(self) -> None:
+        pass
+
+
+def loop(console: tcod.console.Console) -> None:
+    """Run a state based game loop."""
+    while stack:
+        stack[-1].on_draw(console)
+        tcod.console_flush()
+        for event in tcod.event.wait():
+            # The stack may change during this loop.
+            if not stack:
+                break
+            stack[-1].dispatch(event)
