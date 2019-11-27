@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import Any, List, TYPE_CHECKING
 
 import actions
 import state
@@ -35,7 +35,7 @@ class InventoryMenu(state.State):
         """Draw inventory menu over the previous state."""
         assert self.model.player.inventory
         self.parent.on_draw(console)
-        style = {"fg": (255, 255, 255), "bg": (0, 0, 0)}
+        style: Any = {"fg": (255, 255, 255), "bg": (0, 0, 0)}
         console.print(0, 0, "Inventory:", **style)
         for i, e in enumerate(self.model.player.inventory.contents):
             assert e.item
