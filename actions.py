@@ -94,3 +94,14 @@ class ActivateItem(ActionWithEntity):
         assert self.target.item
         assert self.target in self.actor.inventory.contents
         self.target.item.activate(self)
+
+
+class DropItem(ActionWithEntity):
+    def act(self) -> None:
+        assert self.actor.inventory
+        assert self.target.item
+        assert self.target in self.actor.inventory.contents
+        self.actor.inventory.contents.remove(self.target)
+        self.map.entities.append(self.target)
+        self.target.location = self.actor.location
+        self.report(f"You drop the {self.target.item.name}.")

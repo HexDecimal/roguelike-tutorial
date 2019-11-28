@@ -38,6 +38,7 @@ class State(tcod.event.EventDispatch):
     }
 
     COMMAND_KEYS = {
+        tcod.event.K_d: "drop",
         tcod.event.K_i: "inventory",
         tcod.event.K_g: "pickup",
         tcod.event.K_ESCAPE: "quit",
@@ -80,6 +81,9 @@ class State(tcod.event.EventDispatch):
         pass
 
     def cmd_inventory(self) -> None:
+        pass
+
+    def cmd_drop(self) -> None:
         pass
 
 

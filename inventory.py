@@ -27,6 +27,8 @@ class Inventory:
 
 
 class InventoryMenu(state.State):
+    desc: str  # Banner text.
+
     def __init__(self, model: Model):
         super().__init__()
         self.model = model
@@ -36,7 +38,7 @@ class InventoryMenu(state.State):
         assert self.model.player.inventory
         self.parent.on_draw(console)
         style: Any = {"fg": (255, 255, 255), "bg": (0, 0, 0)}
-        console.print(0, 0, "Inventory:", **style)
+        console.print(0, 0, self.desc, **style)
         for i, e in enumerate(self.model.player.inventory.contents):
             assert e.item
             sym = Inventory.symbols[i]
@@ -55,10 +57,26 @@ class InventoryMenu(state.State):
 
     def pick_item(self, item: Entity) -> None:
         """Player selected this item."""
-        self.pop()  # Exit item menu.
-        actions.ActivateItem(self.model.player, item).act()
-        self.model.enemy_turn()
+        raise NotImplementedError()
 
     def cmd_quit(self) -> None:
         """Return to previous state."""
         self.pop()
+
+
+class UseInventory(InventoryMenu):
+    desc = "Select an item to USE, or press ESC to exit."
+
+    def pick_item(self, item: Entity) -> None:
+        self.pop()  # Exit item menu.
+        actions.ActivateItem(self.model.player, item).act()
+        self.model.enemy_turn()
+
+
+class DropInventory(InventoryMenu):
+    desc = "Select an item to DROP, or press ESC to exit."
+
+    def pick_item(self, item: Entity) -> None:
+        self.pop()  # Exit item menu.
+        actions.DropItem(self.model.player, item).act()
+        self.model.enemy_turn()

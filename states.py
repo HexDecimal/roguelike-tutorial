@@ -94,4 +94,9 @@ class GameState(State):
     def cmd_inventory(self) -> None:
         if self.is_player_dead():
             return
-        inventory.InventoryMenu(self.model).push()
+        inventory.UseInventory(self.model).push()
+
+    def cmd_drop(self) -> None:
+        if self.is_player_dead():
+            return
+        inventory.DropInventory(self.model).push()
