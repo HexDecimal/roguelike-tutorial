@@ -36,6 +36,7 @@ class GameState(State):
     def __init__(self, model: model.Model):
         super().__init__()
         self.model = model
+        self.camera_xy = (0, 0)  # Camera focus center position.
 
     @property
     def active_map(self) -> gamemap.GameMap:
@@ -45,9 +46,11 @@ class GameState(State):
         bar_width = 20
         player = self.model.player
         assert player.fighter
+        if player.location:
+            self.camera_xy = player.location.xy
 
         console.clear()
-        self.active_map.render(console)
+        self.active_map.render(console, self.camera_xy)
 
         render_bar(
             console,

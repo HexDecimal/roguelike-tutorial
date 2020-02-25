@@ -6,6 +6,7 @@ import tcod
 import tcod.console
 import tcod.event
 
+CONSOLE_MIN_SIZE = (32, 10)  # The smallest acceptable main console size.
 stack: List[State] = []  # A stack of state objects.
 
 
@@ -87,13 +88,24 @@ class State(tcod.event.EventDispatch):
         pass
 
 
-def loop(console: tcod.console.Console) -> None:
+def configure_console() -> tcod.console.Console:
+    """Return a new main console with an automatically determined size."""
+    width, height = tcod.console.recommended_size()
+    width = max(width, CONSOLE_MIN_SIZE[0])
+    height = max(height, CONSOLE_MIN_SIZE[1])
+    return tcod.console.Console(width, height, order="F")
+
+
+def loop() -> None:
     """Run a state based game loop."""
+    console = configure_console()
     while stack:
         stack[-1].on_draw(console)
-        tcod.console_flush()
+        tcod.console_flush(console)
         for event in tcod.event.wait():
             # The stack may change during this loop.
             if not stack:
                 break
+            if event.type == "WINDOWRESIZED":
+                console = configure_console()
             stack[-1].dispatch(event)

@@ -107,28 +107,46 @@ class GameMap:
         )
         self.explored |= self.visible
 
-    def render(self, console: tcod.console.Console) -> None:
+    def render(self, console: tcod.console.Console, camera_xy: Tuple[int, int]) -> None:
         """Render this maps contents onto a console."""
-        console.tiles2[: self.width, : self.height] = np.select(
-            (self.visible, self.explored),
-            (self.tiles["light"], self.tiles["dark"]),
+        # Get the view size from the window size or world size,
+        # whichever is smaller.
+        UI_SIZE = 5
+        view_width = min(self.width, console.width)
+        view_height = min(self.height, console.height - UI_SIZE)
+        # Get the upper left camera position, assuming camera_xy is the center.
+        cam_x = camera_xy[0] - view_width // 2
+        cam_y = camera_xy[1] - view_height // 2
+        cam_x = max(0, min(cam_x, self.width - view_width))
+        cam_y = max(0, min(cam_y, self.height - view_height))
+
+        # Get the screen and world view slices.
+        screen_view = np.s_[:view_width, :view_height]
+        world_view = np.s_[cam_x : cam_x + view_width, cam_y : cam_y + view_height]
+
+        # Draw the console based on visible or explored areas.
+        console.tiles_rgb[screen_view] = np.select(
+            (self.visible[world_view], self.explored[world_view]),
+            (self.tiles["light"][world_view], self.tiles["dark"][world_view]),
             self.DARKNESS,
         )
 
+        # Collect and filter the various entity objects.
         visible_objs: Dict[Tuple[int, int], List[Graphic]] = defaultdict(list)
         for obj in self.entities:
             if obj.graphic is None or obj.location is None:
                 continue
-            xy = obj.location.xy
-            if not (0 <= xy[0] < console.width and 0 <= xy[1] < console.height):
+            obj_x, obj_y = obj.location.x - cam_x, obj.location.y - cam_y
+            if not (0 <= obj_x < view_width and 0 <= obj_y < view_height):
                 continue
-            if not self.visible[xy]:
+            if not self.visible[obj.location.xy]:
                 continue
-            visible_objs[xy].append(obj.graphic)
+            visible_objs[obj_x, obj_y].append(obj.graphic)
 
+        # Draw the visible entities.
         for xy, graphics in visible_objs.items():
             graphic = min(graphics)
-            console.tiles2[["ch", "fg"]][xy] = graphic.char, graphic.color
+            console.tiles_rgb[["ch", "fg"]][xy] = graphic.char, graphic.color
 
     def __getitem__(self, key: Tuple[int, int]) -> MapLocation:
         return MapLocation(self, *key)

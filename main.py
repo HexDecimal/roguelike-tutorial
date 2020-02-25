@@ -25,12 +25,12 @@ def main() -> None:
         renderer=tcod.RENDERER_SDL2,
         vsync=True,
         order="F",
-    ) as console:
+    ):
         model_ = model.Model()
         model_.active_map = procgen.generate(map_width, map_height)
         model_.active_map.model = model_
         states.GameState(model_).push()
-        state.loop(console)  # Enter state based loop.
+        state.loop()  # Enter state based loop.
 
 
 if __name__ == "__main__":
