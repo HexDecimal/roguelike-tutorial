@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import effect
 import graphic
 
 if TYPE_CHECKING:
@@ -25,14 +26,22 @@ class Item(graphic.Graphic):
         action.actor.inventory.contents.remove(action.target)
 
 
-class HealingPotion(Item):
-    name = "Healing Potion"
+class Potion(Item):
+    name = "Potion"
     char = ord("!")
-    color = (64, 0, 64)
+    color = (255, 255, 255)
+
+    def __init__(self, my_effect: effect.Effect):
+        self.my_effect = my_effect
 
     def activate(self, action: ActionWithEntity) -> None:
         self.consume(action)
-        assert action.actor.fighter
-        fighter = action.actor.fighter
-        fighter.hp = min(fighter.hp + 4, fighter.max_hp)
-        action.report(f"{fighter.name} heal 4 hp.")
+        self.my_effect.apply(action, action.actor)
+
+
+class HealingPotion(Potion):
+    name = "Healing Potion"
+    color = (64, 0, 64)
+
+    def __init__(self) -> None:
+        super().__init__(effect.Healing(4))
