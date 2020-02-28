@@ -7,7 +7,6 @@ import tcod
 
 import model
 import state
-import states
 import procgen
 
 
@@ -25,12 +24,11 @@ def main() -> None:
         renderer=tcod.RENDERER_SDL2,
         vsync=True,
         order="F",
-    ):
+    ) as state.g_console:
         model_ = model.Model()
         model_.active_map = procgen.generate(map_width, map_height)
         model_.active_map.model = model_
-        states.GameState(model_).push()
-        state.loop()  # Enter state based loop.
+        model_.loop()
 
 
 if __name__ == "__main__":

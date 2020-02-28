@@ -58,6 +58,7 @@ class GameMap:
         self.explored = np.zeros(self.shape, dtype=bool, order="F")
         self.visible = np.zeros(self.shape, dtype=bool, order="F")
         self.entities: List[entity.Entity] = []
+        self.camera_xy = (0, 0)  # Camera center position.
 
     def is_blocked(self, x: int, y: int) -> bool:
         """Return True if this position is impassible."""
@@ -107,7 +108,7 @@ class GameMap:
         )
         self.explored |= self.visible
 
-    def render(self, console: tcod.console.Console, camera_xy: Tuple[int, int]) -> None:
+    def render(self, console: tcod.console.Console) -> None:
         """Render this maps contents onto a console."""
         # Get the view size from the window size or world size,
         # whichever is smaller.
@@ -115,8 +116,8 @@ class GameMap:
         view_width = min(self.width, console.width)
         view_height = min(self.height, console.height - UI_SIZE)
         # Get the upper left camera position, assuming camera_xy is the center.
-        cam_x = camera_xy[0] - view_width // 2
-        cam_y = camera_xy[1] - view_height // 2
+        cam_x = self.camera_xy[0] - view_width // 2
+        cam_y = self.camera_xy[1] - view_height // 2
         cam_x = max(0, min(cam_x, self.width - view_width))
         cam_y = max(0, min(cam_y, self.height - view_height))
 

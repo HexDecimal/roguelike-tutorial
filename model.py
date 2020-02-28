@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import List, TYPE_CHECKING
 
+import states
+
 if TYPE_CHECKING:
     import gamemap
     import entity
@@ -22,6 +24,18 @@ class Model:
     def report(self, text: str) -> None:
         print(text)
         self.log.append(text)
+
+    def is_player_dead(self) -> bool:
+        """True if the player had died."""
+        return not self.player.fighter or self.player.fighter.hp <= 0
+
+    def loop(self) -> None:
+        while True:
+            if self.is_player_dead():
+                states.GameOver(self).loop()
+                continue
+            states.PlayerReady(self).loop()
+            self.enemy_turn()
 
     def enemy_turn(self) -> None:
         for obj in self.active_map.entities:

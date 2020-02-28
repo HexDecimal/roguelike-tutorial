@@ -1,105 +1,112 @@
 from __future__ import annotations
 
-from typing import Tuple, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 import tcod
 import tcod.console
 
 import actions
 from state import State
-import inventory
+import rendering
 
 if TYPE_CHECKING:
-    import gamemap
-    import model
+    from model import Model
+    from entity import Entity
 
 
-def render_bar(
-    console: tcod.console.Console,
-    x: int,
-    y: int,
-    width: int,
-    text: str,
-    fullness: float,
-    fg: Tuple[int, int, int],
-    bg: Tuple[int, int, int],
-) -> None:
-    """Render a filled bar with centered text."""
-    console.print(x, y, text.center(width)[:width], fg=(255, 255, 255))
-    bar_bg = console.tiles2["bg"][x : x + width, y]
-    bar_bg[...] = bg
-    fill_width = max(0, min(width, int(fullness * width)))
-    bar_bg[:fill_width] = fg
-
-
-class GameState(State):
-    def __init__(self, model: model.Model):
+class GameMapState(State):
+    def __init__(self, model: Model):
         super().__init__()
         self.model = model
-        self.camera_xy = (0, 0)  # Camera focus center position.
-
-    @property
-    def active_map(self) -> gamemap.GameMap:
-        return self.model.active_map
 
     def on_draw(self, console: tcod.console.Console) -> None:
-        bar_width = 20
-        player = self.model.player
-        assert player.fighter
-        if player.location:
-            self.camera_xy = player.location.xy
+        rendering.draw_main_view(self.model, console)
 
-        console.clear()
-        self.active_map.render(console, self.camera_xy)
 
-        render_bar(
-            console,
-            1,
-            console.height - 2,
-            bar_width,
-            f"HP: {player.fighter.hp:02}/{player.fighter.max_hp:02}",
-            player.fighter.hp / player.fighter.max_hp,
-            (0x40, 0x80, 0),
-            (0x80, 0, 0),
-        )
-
-        x = bar_width + 2
-        y = console.height
-        log_width = console.width - x
-        i = 0
-        for text in self.model.log[::-1]:
-            i += tcod.console.get_height_rect(log_width, text)
-            if i >= 7:
-                break
-            console.print_box(x, y - i, log_width, 0, text)
-
-    def is_player_dead(self) -> bool:
-        """True if the player had died."""
-        return not self.model.player.fighter or self.model.player.fighter.hp <= 0
-
+class PlayerReady(GameMapState):
     def cmd_quit(self) -> None:
         """Save and quit."""
         raise SystemExit()
 
     def cmd_move(self, x: int, y: int) -> None:
         """Move the player entity."""
-        if self.is_player_dead():
-            return
         actions.Move(self.model.player, (x, y)).act()
-        self.model.enemy_turn()
+        self.running = False
 
     def cmd_pickup(self) -> None:
-        if self.is_player_dead():
-            return
         actions.Pickup(self.model.player).act()
-        self.model.enemy_turn()
+        self.running = False
 
     def cmd_inventory(self) -> None:
-        if self.is_player_dead():
-            return
-        inventory.UseInventory(self.model).push()
+        state = UseInventory(self.model)
+        state.loop()
+        self.running = not state.action_taken
 
     def cmd_drop(self) -> None:
-        if self.is_player_dead():
-            return
-        inventory.DropInventory(self.model).push()
+        state = DropInventory(self.model)
+        state.loop()
+        self.running = not state.action_taken
+
+
+class GameOver(GameMapState):
+    def cmd_quit(self) -> None:
+        """Save and quit."""
+        raise SystemExit()
+
+
+class BaseInventoryMenu(GameMapState):
+    desc: str  # Banner text.
+
+    def __init__(self, model: Model):
+        super().__init__(model)
+        self.action_taken = False  # Becomes True if an action was invoked.
+
+    def on_draw(self, console: tcod.console.Console) -> None:
+        """Draw inventory menu over the previous state."""
+        assert self.model.player.inventory
+        inventory_ = self.model.player.inventory
+        rendering.draw_main_view(self.model, console)
+        style: Any = {"fg": (255, 255, 255), "bg": (0, 0, 0)}
+        console.print(0, 0, self.desc, **style)
+        for i, e in enumerate(inventory_.contents):
+            assert e.item
+            sym = inventory_.symbols[i]
+            console.print(0, 2 + i, f"{sym}: {e.item.name}", **style)
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> None:
+        # Add check for item based symbols.
+        assert self.model.player.inventory
+        inventory_ = self.model.player.inventory
+        if chr(event.sym) in inventory_.symbols:
+            index = inventory_.symbols.index(chr(event.sym))
+            if index < len(inventory_.contents):
+                item = inventory_.contents[index]
+                self.pick_item(item)
+                return
+        super().ev_keydown(event)
+
+    def pick_item(self, item: Entity) -> None:
+        """Player selected this item."""
+        raise NotImplementedError()
+
+    def cmd_quit(self) -> None:
+        """Return to previous state."""
+        self.running = False
+
+
+class UseInventory(BaseInventoryMenu):
+    desc = "Select an item to USE, or press ESC to exit."
+
+    def pick_item(self, item: Entity) -> None:
+        self.running = False  # Exit item menu.
+        self.action_taken = True
+        actions.ActivateItem(self.model.player, item).act()
+
+
+class DropInventory(BaseInventoryMenu):
+    desc = "Select an item to DROP, or press ESC to exit."
+
+    def pick_item(self, item: Entity) -> None:
+        self.running = False  # Exit item menu.
+        self.action_taken = True
+        actions.DropItem(self.model.player, item).act()
