@@ -22,6 +22,7 @@ class State(tcod.event.EventDispatch):
         tcod.event.K_KP_2: (0, 1),
         tcod.event.K_KP_3: (1, 1),
         tcod.event.K_KP_4: (-1, 0),
+        tcod.event.K_KP_5: (0, 0),
         tcod.event.K_KP_6: (1, 0),
         tcod.event.K_KP_7: (-1, -1),
         tcod.event.K_KP_8: (0, -1),
@@ -34,6 +35,8 @@ class State(tcod.event.EventDispatch):
         tcod.event.K_u: (1, -1),
         tcod.event.K_b: (-1, 1),
         tcod.event.K_n: (1, 1),
+        tcod.event.K_PERIOD: (0, 0),
+        tcod.event.K_CLEAR: (0, 0),
     }
 
     COMMAND_KEYS = {
