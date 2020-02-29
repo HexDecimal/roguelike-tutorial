@@ -7,10 +7,14 @@ class MoveTo(ActionWithPosition):
     """Move an entity to a position, interacting with obstacles."""
 
     def act(self) -> None:
+        assert self.actor.location
+        if self.actor.location.xy == self.target_pos:
+            return self.reschedule(100)
         if not self.map.is_blocked(*self.target_pos):
             self.actor.location = self.map[self.target_pos]
             if self.is_player():
                 self.map.update_fov()
+            self.reschedule(100)
         elif self.map.fighter_at(*self.target_pos):
             return Attack(self.actor, self.target_pos).act()
 
@@ -66,6 +70,7 @@ class Attack(ActionWithPosition):
             target.graphic.char = ord("%")
             target.graphic.color = (127, 0, 0)
             target.graphic.render_order = 2
+        self.reschedule(100)
 
 
 class AttackPlayer(Action):
@@ -84,6 +89,7 @@ class Pickup(Action):
             if obj.item:
                 self.report(f"{self.actor.fighter.name} pick up the {obj.item.name}.")
                 self.actor.inventory.take(obj)
+                self.reschedule(100)
                 return
         self.report("There is nothing to pick up.")
 
@@ -94,6 +100,7 @@ class ActivateItem(ActionWithEntity):
         assert self.target.item
         assert self.target in self.actor.inventory.contents
         self.target.item.activate(self)
+        self.reschedule(100)
 
 
 class DropItem(ActionWithEntity):
@@ -105,3 +112,4 @@ class DropItem(ActionWithEntity):
         self.map.entities.append(self.target)
         self.target.location = self.actor.location
         self.report(f"You drop the {self.target.item.name}.")
+        self.reschedule(100)

@@ -34,13 +34,4 @@ class Model:
             if self.is_player_dead():
                 states.GameOver(self).loop()
                 continue
-            states.PlayerReady(self).loop()
-            self.enemy_turn()
-
-    def enemy_turn(self) -> None:
-        for obj in self.active_map.entities:
-            if not obj.ai:
-                continue
-            if obj is self.player:
-                continue
-            obj.ai.take_turn(obj)
+            self.active_map.scheduler.invoke_next()

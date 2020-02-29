@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from ai import AI
     from inventory import Inventory
     from item import Item
+    from tqueue import TurnQueue, Ticket
 
 
 @dataclass
@@ -22,3 +23,9 @@ class Entity:
     ai: Optional[AI] = None
     inventory: Optional[Inventory] = None
     item: Optional[Item] = None
+    ticket: Optional[Ticket] = None
+
+    def act(self, scheduler: TurnQueue, ticket: Ticket) -> None:
+        if ticket is not self.ticket or self.ai is None:
+            return scheduler.unschedule(ticket)
+        self.ai.take_turn(self)

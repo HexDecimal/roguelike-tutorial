@@ -7,6 +7,7 @@ import numpy as np  # type: ignore
 import tcod
 
 from location import Location
+from tqueue import TurnQueue
 
 if TYPE_CHECKING:
     import tcod.console
@@ -59,6 +60,7 @@ class GameMap:
         self.visible = np.zeros(self.shape, dtype=bool, order="F")
         self.entities: List[entity.Entity] = []
         self.camera_xy = (0, 0)  # Camera center position.
+        self.scheduler = TurnQueue()
 
     def is_blocked(self, x: int, y: int) -> bool:
         """Return True if this position is impassible."""

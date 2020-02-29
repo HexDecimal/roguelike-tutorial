@@ -41,6 +41,8 @@ def spawn(location: Location, **components: Any) -> Entity:
     if entity.item:
         entity.graphic = entity.item
     location.map.entities.append(entity)
+    if entity.fighter:
+        entity.ticket = location.map.scheduler.schedule(0, entity.act)
     return entity
 
 
@@ -156,7 +158,9 @@ def generate(width: int, height: int) -> gamemap.GameMap:
         rooms.append(new_room)
 
     # Add player to the first room.
-    gm.player = spawn(gm[rooms[0].center], fighter=fighter.Player())
+    gm.player = spawn(
+        gm[rooms[0].center], fighter=fighter.Player(), ai=ai.PlayerControl()
+    )
     gm.entities.append(gm.player)
 
     for room in rooms:

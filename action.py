@@ -20,6 +20,11 @@ class Action:
         """Return True if the active actor is the player entity."""
         return self.location.map.player is self.actor
 
+    def reschedule(self, interval: int) -> None:
+        """Reschedule this actor to run after `interval` ticks."""
+        assert self.actor.ticket
+        self.actor.ticket = self.map.scheduler.reschedule(self.actor.ticket, interval)
+
     @property
     def location(self) -> Location:
         assert self.actor.location, self.actor

@@ -6,6 +6,7 @@ import numpy as np  # type: ignore
 import tcod.path
 
 import actions
+import states
 
 if TYPE_CHECKING:
     import entity
@@ -46,8 +47,17 @@ class BasicMonster(AI):
                 self.path = []
                 actions.MoveTowards(owner, map_.player.location.xy).act()
         if not self.path:
+            actions.Move(owner, (0, 0)).act()
             return
         if owner.location.distance_to(*map_.player.location.xy) <= 1:
             actions.AttackPlayer(owner).act()
         else:
             actions.MoveTo(owner, self.path.pop(0)).act()
+
+
+class PlayerControl(AI):
+    def take_turn(self, owner: entity.Entity) -> None:
+        assert owner.location
+        ticket = owner.ticket
+        while ticket is owner.ticket:
+            states.PlayerReady(owner.location.map.model).loop()
