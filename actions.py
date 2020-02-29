@@ -8,6 +8,8 @@ class MoveTo(ActionWithPosition):
 
     def act(self) -> None:
         assert self.actor.location
+        assert self.actor.location.distance_to(*self.target_pos) <= 1, \
+            "Can't move from %s to %s" % (self.actor.location.xy, self.target_pos)
         if self.actor.location.xy == self.target_pos:
             return self.reschedule(100)
         if not self.map.is_blocked(*self.target_pos):
