@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Dict, Iterator, List, NamedTuple, Optional, Tuple, TYPE_CHECKING
+from typing import Dict, List, NamedTuple, Optional, Tuple, TYPE_CHECKING
 
 import numpy as np  # type: ignore
 import tcod
@@ -11,8 +11,9 @@ from tqueue import TurnQueue
 
 if TYPE_CHECKING:
     import tcod.console
-    import entity
+    from actor import Actor
     from graphic import Graphic
+    from item import Item
     from model import Model
 
 # Data types for handling game map tiles:
@@ -49,7 +50,7 @@ class GameMap:
     DARKNESS = np.asarray((0, (0, 0, 0), (0, 0, 0)), dtype=tile_graphic)
 
     model: Model
-    player: entity.Entity
+    player: Actor
 
     def __init__(self, width: int, height: int):
         self.width = width
@@ -58,7 +59,8 @@ class GameMap:
         self.tiles = np.zeros(self.shape, dtype=tile_dt, order="F")
         self.explored = np.zeros(self.shape, dtype=bool, order="F")
         self.visible = np.zeros(self.shape, dtype=bool, order="F")
-        self.entities: List[entity.Entity] = []
+        self.actors: List[Actor] = []
+        self.items: Dict[Tuple[int, int], List[Item]] = {}
         self.camera_xy = (0, 0)  # Camera center position.
         self.scheduler = TurnQueue()
 
@@ -68,34 +70,17 @@ class GameMap:
             return True
         if not self.tiles[x, y]["move_cost"]:
             return True
-        for e in self.entities:
-            if (
-                e.fighter
-                and e.fighter.hp > 0
-                and e.location
-                and e.location.xy == (x, y)
-            ):
-                return True
+        if any(actor.location.xy == (x, y) for actor in self.actors):
+            return True
 
         return False
 
-    def fighter_at(self, x: int, y: int) -> Optional[entity.Entity]:
+    def fighter_at(self, x: int, y: int) -> Optional[Actor]:
         """Return any fighter entity found at this position."""
-        for e in self.entities:
-            if (
-                e.fighter
-                and e.fighter.hp > 0
-                and e.location
-                and e.location.xy == (x, y)
-            ):
-                return e
+        for actor in self.actors:
+            if actor.location.xy == (x, y):
+                return actor
         return None
-
-    def entities_at(self, x: int, y: int) -> Iterator[entity.Entity]:
-        """Return all entities at x,y."""
-        for e in self.entities:
-            if e.location and e.location.xy == (x, y):
-                yield e
 
     def update_fov(self) -> None:
         """Update the field of view around the player."""
@@ -136,15 +121,20 @@ class GameMap:
 
         # Collect and filter the various entity objects.
         visible_objs: Dict[Tuple[int, int], List[Graphic]] = defaultdict(list)
-        for obj in self.entities:
-            if obj.graphic is None or obj.location is None:
-                continue
+        for obj in self.actors:
             obj_x, obj_y = obj.location.x - cam_x, obj.location.y - cam_y
             if not (0 <= obj_x < view_width and 0 <= obj_y < view_height):
                 continue
             if not self.visible[obj.location.xy]:
                 continue
-            visible_objs[obj_x, obj_y].append(obj.graphic)
+            visible_objs[obj_x, obj_y].append(obj.fighter)
+        for (item_x, item_y), items in self.items.items():
+            obj_x, obj_y = item_x - cam_x, item_y - cam_y
+            if not (0 <= obj_x < view_width and 0 <= obj_y < view_height):
+                continue
+            if not self.visible[item_x, item_y]:
+                continue
+            visible_objs[obj_x, obj_y].extend(items)
 
         # Draw the visible entities.
         for xy, graphics in visible_objs.items():

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import Any, Iterator, List, Tuple, Type, TYPE_CHECKING
+from typing import Iterator, List, Tuple, Type
 
 import numpy as np  # type: ignore
 import tcod
@@ -9,12 +9,7 @@ import tcod
 import ai
 import fighter
 import gamemap
-from entity import Entity
-import inventory
 import item
-
-if TYPE_CHECKING:
-    from location import Location
 
 WALL = gamemap.Tile(
     move_cost=0,
@@ -28,22 +23,6 @@ FLOOR = gamemap.Tile(
     light=(ord(" "), (255, 255, 255), (200, 180, 50)),
     dark=(ord(" "), (255, 255, 255), (50, 50, 150)),
 )
-
-
-def spawn(location: Location, **components: Any) -> Entity:
-    entity = Entity(location=location, **components)
-    if entity.fighter:
-        if not entity.ai:
-            f = entity.fighter
-            entity.ai = f.AI() if f.AI is not None else ai.BasicMonster()
-        entity.inventory = inventory.Inventory()
-        entity.graphic = entity.fighter
-    if entity.item:
-        entity.graphic = entity.item
-    location.map.entities.append(entity)
-    if entity.fighter:
-        entity.ticket = location.map.scheduler.schedule(0, entity.act)
-    return entity
 
 
 class Room:
@@ -110,10 +89,10 @@ class Room:
                 monsterCls = fighter.Orc
             else:
                 monsterCls = fighter.Troll
-            spawn(gamemap[xy], fighter=monsterCls())
+            monsterCls.spawn(gamemap[xy])
 
         for xy in self.get_free_spaces(gamemap, items):
-            spawn(gamemap[xy], item=item.HealingPotion())
+            item.HealingPotion().place(gamemap[xy])
 
 
 def generate(width: int, height: int) -> gamemap.GameMap:
@@ -158,10 +137,8 @@ def generate(width: int, height: int) -> gamemap.GameMap:
         rooms.append(new_room)
 
     # Add player to the first room.
-    gm.player = spawn(
-        gm[rooms[0].center], fighter=fighter.Player(), ai=ai.PlayerControl()
-    )
-    gm.entities.append(gm.player)
+    gm.player = fighter.Player.spawn(gm[rooms[0].center], ai=ai.PlayerControl())
+    gm.actors.append(gm.player)
 
     for room in rooms:
         room.place_entities(gm)

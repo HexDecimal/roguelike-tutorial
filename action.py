@@ -2,15 +2,18 @@ from __future__ import annotations
 
 from typing import Tuple, TYPE_CHECKING
 
+import item as item_
+
 if TYPE_CHECKING:
-    import entity
+    from actor import Actor
     from gamemap import GameMap
+    from item import Item
     from location import Location
     from model import Model
 
 
 class Action:
-    def __init__(self, actor: entity.Entity):
+    def __init__(self, actor: Actor):
         self.actor = actor
 
     def act(self) -> None:
@@ -25,19 +28,30 @@ class Action:
         assert self.actor.ticket
         self.actor.ticket = self.map.scheduler.reschedule(self.actor.ticket, interval)
 
+    def kill_actor(self, target: Actor) -> None:
+        """Kill target and replace with a corpse."""
+        if target is self.map.player:
+            self.report(f"You die.")
+        else:
+            self.report(f"The {target.fighter.name} dies.")
+        item_.Corpse(target).place(target.location)  # Leave behind corpse.
+        # Drop all held items.
+        for item in list(target.fighter.inventory.contents):
+            item.lift()
+            item.place(target.location)
+        target.location.map.actors.remove(target)  # Actually remove the actor.
+        target.ticket = None  # Disable AI.
+
     @property
     def location(self) -> Location:
-        assert self.actor.location, self.actor
         return self.actor.location
 
     @property
     def map(self) -> GameMap:
-        assert self.actor.location, self.actor
         return self.actor.location.map
 
     @property
     def model(self) -> Model:
-        assert self.actor.location, self.actor
         return self.actor.location.map.model
 
     def report(self, msg: str) -> None:
@@ -45,20 +59,25 @@ class Action:
 
 
 class ActionWithPosition(Action):
-    def __init__(self, actor: entity.Entity, position: Tuple[int, int]):
+    def __init__(self, actor: Actor, position: Tuple[int, int]):
         super().__init__(actor)
         self.target_pos = position
 
 
 class ActionWithDirection(ActionWithPosition):
-    def __init__(self, actor: entity.Entity, direction: Tuple[int, int]):
-        assert actor.location
+    def __init__(self, actor: Actor, direction: Tuple[int, int]):
         position = actor.location.x + direction[0], actor.location.y + direction[1]
         super().__init__(actor, position)
         self.direction = direction
 
 
 class ActionWithEntity(Action):
-    def __init__(self, actor: entity.Entity, target: entity.Entity):
+    def __init__(self, actor: Actor, target: Actor):
         super().__init__(actor)
         self.target = target
+
+
+class ActionWithItem(Action):
+    def __init__(self, actor: Actor, target: Item):
+        super().__init__(actor)
+        self.item = target

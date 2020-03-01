@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from entity import Entity
+    from item import Item
 
 
 class Inventory:
@@ -11,10 +11,11 @@ class Inventory:
     capacity = len(symbols)
 
     def __init__(self) -> None:
-        self.contents: List[Entity] = []
+        self.contents: List[Item] = []
 
-    def take(self, entity: Entity) -> None:
-        self.contents.append(entity)
-        assert entity.location
-        entity.location.map.entities.remove(entity)
-        entity.location = None
+    def take(self, item: Item) -> None:
+        """Take an item from its current location and put it in self."""
+        assert item.owner is not self
+        item.lift()
+        self.contents.append(item)
+        item.owner = self

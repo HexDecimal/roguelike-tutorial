@@ -11,7 +11,7 @@ import rendering
 
 if TYPE_CHECKING:
     from model import Model
-    from entity import Entity
+    from item import Item
 
 
 class GameMapState(State):
@@ -63,19 +63,16 @@ class BaseInventoryMenu(GameMapState):
 
     def on_draw(self, console: tcod.console.Console) -> None:
         """Draw inventory menu over the previous state."""
-        assert self.model.player.inventory
         inventory_ = self.model.player.inventory
         rendering.draw_main_view(self.model, console)
         style: Any = {"fg": (255, 255, 255), "bg": (0, 0, 0)}
         console.print(0, 0, self.desc, **style)
-        for i, e in enumerate(inventory_.contents):
-            assert e.item
+        for i, item in enumerate(inventory_.contents):
             sym = inventory_.symbols[i]
-            console.print(0, 2 + i, f"{sym}: {e.item.name}", **style)
+            console.print(0, 2 + i, f"{sym}: {item.name}", **style)
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
         # Add check for item based symbols.
-        assert self.model.player.inventory
         inventory_ = self.model.player.inventory
         if chr(event.sym) in inventory_.symbols:
             index = inventory_.symbols.index(chr(event.sym))
@@ -85,7 +82,7 @@ class BaseInventoryMenu(GameMapState):
                 return
         super().ev_keydown(event)
 
-    def pick_item(self, item: Entity) -> None:
+    def pick_item(self, item: Item) -> None:
         """Player selected this item."""
         raise NotImplementedError()
 
@@ -97,7 +94,7 @@ class BaseInventoryMenu(GameMapState):
 class UseInventory(BaseInventoryMenu):
     desc = "Select an item to USE, or press ESC to exit."
 
-    def pick_item(self, item: Entity) -> None:
+    def pick_item(self, item: Item) -> None:
         self.running = False  # Exit item menu.
         self.action_taken = True
         actions.ActivateItem(self.model.player, item).act()
@@ -106,7 +103,7 @@ class UseInventory(BaseInventoryMenu):
 class DropInventory(BaseInventoryMenu):
     desc = "Select an item to DROP, or press ESC to exit."
 
-    def pick_item(self, item: Entity) -> None:
+    def pick_item(self, item: Item) -> None:
         self.running = False  # Exit item menu.
         self.action_taken = True
         actions.DropItem(self.model.player, item).act()

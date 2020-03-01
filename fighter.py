@@ -2,10 +2,14 @@ from __future__ import annotations
 
 from typing import Optional, Type, TYPE_CHECKING
 
+import actor
+from ai import AI, BasicMonster
 import graphic
+from inventory import Inventory
+
 
 if TYPE_CHECKING:
-    import ai
+    from location import Location
 
 
 class Fighter(graphic.Graphic):
@@ -15,10 +19,19 @@ class Fighter(graphic.Graphic):
     power: int = 0
     defense: int = 0
 
-    AI: Optional[Type[ai.AI]] = None
+    DEFAULT_AI: Type[AI] = BasicMonster
 
-    def __init__(self) -> None:
+    def __init__(
+        self, inventory: Optional[Inventory] = None, ai: Optional[AI] = None
+    ) -> None:
         self.max_hp = self.hp
+        self.inventory = inventory or Inventory()
+        self.ai = ai or self.DEFAULT_AI()
+
+    @classmethod
+    def spawn(cls, location: Location, ai: Optional[AI] = None) -> actor.Actor:
+        self = cls(ai=ai)
+        return actor.Actor(location, self)
 
 
 class Player(Fighter):

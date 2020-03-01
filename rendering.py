@@ -30,7 +30,6 @@ def render_bar(
 def draw_main_view(model: Model, console: Console) -> None:
     bar_width = 20
     player = model.player
-    assert player.fighter
     if player.location:
         model.active_map.camera_xy = player.location.xy
 

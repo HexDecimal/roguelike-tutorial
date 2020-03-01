@@ -5,20 +5,20 @@ from typing import List, TYPE_CHECKING
 import states
 
 if TYPE_CHECKING:
-    import gamemap
-    import entity
+    from actor import Actor
+    from gamemap import GameMap
 
 
 class Model:
     """The model contains everything from a session which should be saved."""
 
-    active_map: gamemap.GameMap
+    active_map: GameMap
 
     def __init__(self) -> None:
         self.log: List[str] = []
 
     @property
-    def player(self) -> entity.Entity:
+    def player(self) -> Actor:
         return self.active_map.player
 
     def report(self, text: str) -> None:

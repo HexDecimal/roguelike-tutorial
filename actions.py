@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from action import Action, ActionWithPosition, ActionWithDirection, ActionWithEntity
+from action import Action, ActionWithPosition, ActionWithDirection, ActionWithItem
 
 
 class MoveTo(ActionWithPosition):
     """Move an entity to a position, interacting with obstacles."""
 
     def act(self) -> None:
-        assert self.actor.location
-        assert self.actor.location.distance_to(*self.target_pos) <= 1, \
-            "Can't move from %s to %s" % (self.actor.location.xy, self.target_pos)
+        assert (
+            self.actor.location.distance_to(*self.target_pos) <= 1
+        ), "Can't move from %s to %s" % (self.actor.location.xy, self.target_pos)
         if self.actor.location.xy == self.target_pos:
             return self.reschedule(100)
         if not self.map.is_blocked(*self.target_pos):
@@ -47,8 +47,6 @@ class Attack(ActionWithPosition):
         assert self.location.distance_to(*self.target_pos) <= 1
         target = self.map.fighter_at(*self.target_pos)
         assert target
-        assert self.actor.fighter
-        assert target.fighter
 
         damage = self.actor.fighter.power - target.fighter.defense
 
@@ -63,15 +61,7 @@ class Attack(ActionWithPosition):
         else:
             self.report(f"{who_desc} but does no damage.")
         if target.fighter.hp <= 0:
-            if target == self.map.player:
-                self.report(f"You die.")
-            else:
-                self.report(f"The {target.fighter.name} dies.")
-            target.ai = None
-            assert target.graphic
-            target.graphic.char = ord("%")
-            target.graphic.color = (127, 0, 0)
-            target.graphic.render_order = 2
+            self.kill_actor(target)
         self.reschedule(100)
 
 
@@ -79,39 +69,30 @@ class AttackPlayer(Action):
     """Move towards and attack the player."""
 
     def act(self) -> None:
-        assert self.map.player.location
         return MoveTowards(self.actor, self.map.player.location.xy).act()
 
 
 class Pickup(Action):
     def act(self) -> None:
-        assert self.actor.fighter
-        assert self.actor.inventory
-        for obj in self.map.entities_at(*self.location.xy):
-            if obj.item:
-                self.report(f"{self.actor.fighter.name} pick up the {obj.item.name}.")
-                self.actor.inventory.take(obj)
-                self.reschedule(100)
-                return
+        for item in self.map.items.get(self.location.xy, ()):
+            self.report(f"{self.actor.fighter.name} pick up the {item.name}.")
+            self.actor.inventory.take(item)
+            self.reschedule(100)
+            return
         self.report("There is nothing to pick up.")
 
 
-class ActivateItem(ActionWithEntity):
+class ActivateItem(ActionWithItem):
     def act(self) -> None:
-        assert self.actor.inventory
-        assert self.target.item
-        assert self.target in self.actor.inventory.contents
-        self.target.item.activate(self)
+        assert self.item in self.actor.inventory.contents
+        self.item.activate(self)
         self.reschedule(100)
 
 
-class DropItem(ActionWithEntity):
+class DropItem(ActionWithItem):
     def act(self) -> None:
-        assert self.actor.inventory
-        assert self.target.item
-        assert self.target in self.actor.inventory.contents
-        self.actor.inventory.contents.remove(self.target)
-        self.map.entities.append(self.target)
-        self.target.location = self.actor.location
-        self.report(f"You drop the {self.target.item.name}.")
+        assert self.item in self.actor.inventory.contents
+        self.item.lift()
+        self.item.place(self.actor.location)
+        self.report(f"You drop the {self.item.name}.")
         self.reschedule(100)
