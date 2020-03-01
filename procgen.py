@@ -137,7 +137,7 @@ def generate(width: int, height: int) -> gamemap.GameMap:
         rooms.append(new_room)
 
     # Add player to the first room.
-    gm.player = fighter.Player.spawn(gm[rooms[0].center], ai=ai.PlayerControl())
+    gm.player = fighter.Player.spawn(gm[rooms[0].center], ai_cls=ai.PlayerControl)
     gm.actors.append(gm.player)
 
     for room in rooms:

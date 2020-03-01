@@ -21,17 +21,16 @@ class Fighter(graphic.Graphic):
 
     DEFAULT_AI: Type[AI] = BasicMonster
 
-    def __init__(
-        self, inventory: Optional[Inventory] = None, ai: Optional[AI] = None
-    ) -> None:
+    def __init__(self, inventory: Optional[Inventory] = None) -> None:
         self.max_hp = self.hp
         self.inventory = inventory or Inventory()
-        self.ai = ai or self.DEFAULT_AI()
 
     @classmethod
-    def spawn(cls, location: Location, ai: Optional[AI] = None) -> actor.Actor:
-        self = cls(ai=ai)
-        return actor.Actor(location, self)
+    def spawn(
+        cls, location: Location, ai_cls: Optional[Type[AI]] = None
+    ) -> actor.Actor:
+        self = cls()
+        return actor.Actor(location, self, ai_cls or cls.DEFAULT_AI)
 
 
 class Player(Fighter):

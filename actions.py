@@ -1,50 +1,64 @@
 from __future__ import annotations
 
-from action import Action, ActionWithPosition, ActionWithDirection, ActionWithItem
+from action import (
+    NoAction,
+    Action,
+    ActionWithPosition,
+    ActionWithDirection,
+    ActionWithItem,
+)
 
 
 class MoveTo(ActionWithPosition):
     """Move an entity to a position, interacting with obstacles."""
 
-    def act(self) -> None:
+    def poll(self) -> Action:
         assert (
             self.actor.location.distance_to(*self.target_pos) <= 1
         ), "Can't move from %s to %s" % (self.actor.location.xy, self.target_pos)
         if self.actor.location.xy == self.target_pos:
-            return self.reschedule(100)
-        if not self.map.is_blocked(*self.target_pos):
-            self.actor.location = self.map[self.target_pos]
-            if self.is_player():
-                self.map.update_fov()
-            self.reschedule(100)
-        elif self.map.fighter_at(*self.target_pos):
-            return Attack(self.actor, self.target_pos).act()
+            return self
+        if self.map.fighter_at(*self.target_pos):
+            return Attack(self.actor, self.target_pos).poll()
+        if self.map.is_blocked(*self.target_pos):
+            raise NoAction("That way is blocked.")
+        return self
+
+    def act(self) -> None:
+        self.actor.location = self.map[self.target_pos]
+        if self.is_player():
+            self.map.update_fov()
+        self.reschedule(100)
 
 
 class Move(ActionWithDirection):
     """Move an entity in a direction, interaction with obstacles."""
 
-    def act(self) -> None:
-        return MoveTo(self.actor, self.target_pos).act()
+    def poll(self) -> Action:
+        return MoveTo(self.actor, self.target_pos).poll()
 
 
 class MoveTowards(ActionWithPosition):
     """Move towards and possibly interact with destination."""
 
-    def act(self) -> None:
+    def poll(self) -> Action:
         dx = self.target_pos[0] - self.location.x
         dy = self.target_pos[1] - self.location.y
         distance = max(abs(dx), abs(dy))
         dx = int(round(dx / distance))
         dy = int(round(dy / distance))
-        return Move(self.actor, (dx, dy)).act()
+        return Move(self.actor, (dx, dy)).poll()
 
 
 class Attack(ActionWithPosition):
     """Make this entities Fighter attack another entity."""
 
+    def poll(self) -> Attack:
+        if self.location.distance_to(*self.target_pos) > 1:
+            raise NoAction("That space is too far away to attack.")
+        return self
+
     def act(self) -> None:
-        assert self.location.distance_to(*self.target_pos) <= 1
         target = self.map.fighter_at(*self.target_pos)
         assert target
 
@@ -68,18 +82,21 @@ class Attack(ActionWithPosition):
 class AttackPlayer(Action):
     """Move towards and attack the player."""
 
-    def act(self) -> None:
-        return MoveTowards(self.actor, self.map.player.location.xy).act()
+    def poll(self) -> Action:
+        return MoveTowards(self.actor, self.map.player.location.xy).poll()
 
 
 class Pickup(Action):
+    def poll(self) -> Action:
+        if not self.map.items.get(self.location.xy):
+            raise NoAction("There is nothing to pick up.")
+        return self
+
     def act(self) -> None:
-        for item in self.map.items.get(self.location.xy, ()):
+        for item in self.map.items[self.location.xy]:
             self.report(f"{self.actor.fighter.name} pick up the {item.name}.")
             self.actor.inventory.take(item)
-            self.reschedule(100)
-            return
-        self.report("There is nothing to pick up.")
+            return self.reschedule(100)
 
 
 class ActivateItem(ActionWithItem):

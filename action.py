@@ -12,12 +12,21 @@ if TYPE_CHECKING:
     from model import Model
 
 
+class NoAction(Exception):
+    pass
+
+
 class Action:
     def __init__(self, actor: Actor):
         self.actor = actor
 
+    def poll(self) -> Action:
+        """Return the action to perform."""
+        return self
+
     def act(self) -> None:
-        raise NotImplementedError()
+        """Execute the action for this class."""
+        raise NotImplementedError(self)
 
     def is_player(self) -> bool:
         """Return True if the active actor is the player entity."""

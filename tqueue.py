@@ -83,4 +83,4 @@ class TurnQueue:
         ticket = self.heap[0]
         self.current_tick = ticket.tick
         ticket.func(self, ticket)
-        assert ticket is not self.heap[0]
+        assert ticket is not self.heap[0], f"{ticket!r} was not rescheduled."

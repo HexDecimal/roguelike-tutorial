@@ -30,11 +30,11 @@ class PlayerReady(GameMapState):
 
     def cmd_move(self, x: int, y: int) -> None:
         """Move the player entity."""
-        actions.Move(self.model.player, (x, y)).act()
+        actions.Move(self.model.player, (x, y)).poll().act()
         self.running = False
 
     def cmd_pickup(self) -> None:
-        actions.Pickup(self.model.player).act()
+        actions.Pickup(self.model.player).poll().act()
         self.running = False
 
     def cmd_inventory(self) -> None:
@@ -97,7 +97,7 @@ class UseInventory(BaseInventoryMenu):
     def pick_item(self, item: Item) -> None:
         self.running = False  # Exit item menu.
         self.action_taken = True
-        actions.ActivateItem(self.model.player, item).act()
+        actions.ActivateItem(self.model.player, item).poll().act()
 
 
 class DropInventory(BaseInventoryMenu):
@@ -106,4 +106,4 @@ class DropInventory(BaseInventoryMenu):
     def pick_item(self, item: Item) -> None:
         self.running = False  # Exit item menu.
         self.action_taken = True
-        actions.DropItem(self.model.player, item).act()
+        actions.DropItem(self.model.player, item).poll().act()
