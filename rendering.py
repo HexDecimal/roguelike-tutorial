@@ -21,7 +21,7 @@ def render_bar(
 ) -> None:
     """Render a filled bar with centered text."""
     console.print(x, y, text.center(width)[:width], fg=(255, 255, 255))
-    bar_bg = console.tiles2["bg"][x : x + width, y]
+    bar_bg = console.tiles_rgb["bg"][x : x + width, y]
     bar_bg[...] = bg
     fill_width = max(0, min(width, int(fullness * width)))
     bar_bg[:fill_width] = fg
