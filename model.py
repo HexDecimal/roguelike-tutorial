@@ -8,6 +8,15 @@ if TYPE_CHECKING:
     from actor import Actor
     from gamemap import GameMap
 
+class Message:
+    def __init__(self, text: str) -> None:
+        self.text = text
+        self.count = 1
+
+    def __str__(self) -> str:
+        if self.count > 1:
+            return f"{self.text} (x{self.count})"
+        return self.text
 
 class Model:
     """The model contains everything from a session which should be saved."""
@@ -15,7 +24,7 @@ class Model:
     active_map: GameMap
 
     def __init__(self) -> None:
-        self.log: List[str] = []
+        self.log: List[Message] = []
 
     @property
     def player(self) -> Actor:
@@ -23,7 +32,10 @@ class Model:
 
     def report(self, text: str) -> None:
         print(text)
-        self.log.append(text)
+        if self.log and self.log[-1].text == text:
+            self.log[-1].count += 1
+        else:
+            self.log.append(Message(text))
 
     def is_player_dead(self) -> bool:
         """True if the player had died."""
