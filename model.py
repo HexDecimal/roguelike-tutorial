@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from actor import Actor
     from gamemap import GameMap
 
+
 class Message:
     def __init__(self, text: str) -> None:
         self.text = text
@@ -17,6 +18,7 @@ class Message:
         if self.count > 1:
             return f"{self.text} (x{self.count})"
         return self.text
+
 
 class Model:
     """The model contains everything from a session which should be saved."""
