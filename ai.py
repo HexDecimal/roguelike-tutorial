@@ -13,6 +13,24 @@ if TYPE_CHECKING:
     from actor import Actor
 
 
+class Pathfinder(Action):
+    def __init__(self, actor: Actor, dest_xy: Tuple[int, int]) -> None:
+        super().__init__(actor)
+
+        map_ = self.actor.location.map
+        walkable = np.copy(map_.tiles["move_cost"])
+        blocker_pos = [e.location.xy for e in map_.actors]
+        blocker_index = tuple(np.transpose(blocker_pos))
+        walkable[blocker_index] = False
+        walkable[dest_xy] = True
+        self.path: List[Tuple[int, int]] = tcod.path.AStar(walkable).get_path(*self.actor.location.xy, *dest_xy)
+
+    def poll(self) -> Action:
+        if not self.path:
+            raise NoAction("End of path reached.")
+        return actions.MoveTo(self.actor, self.path.pop(0)).poll()
+
+
 class AI(Action):
     def get_path(
         self, owner: Actor, target_xy: Tuple[int, int]
