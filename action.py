@@ -20,7 +20,7 @@ class Action:
     def __init__(self, actor: Actor):
         self.actor = actor
 
-    def poll(self) -> Action:
+    def plan(self) -> Action:
         """Return the action to perform."""
         return self
 

@@ -12,14 +12,14 @@ from action import (
 class MoveTo(ActionWithPosition):
     """Move an entity to a position, interacting with obstacles."""
 
-    def poll(self) -> Action:
+    def plan(self) -> Action:
         assert (
             self.actor.location.distance_to(*self.target_pos) <= 1
         ), "Can't move from %s to %s" % (self.actor.location.xy, self.target_pos)
         if self.actor.location.xy == self.target_pos:
             return self
         if self.map.fighter_at(*self.target_pos):
-            return Attack(self.actor, self.target_pos).poll()
+            return Attack(self.actor, self.target_pos).plan()
         if self.map.is_blocked(*self.target_pos):
             raise NoAction("That way is blocked.")
         return self
@@ -34,26 +34,26 @@ class MoveTo(ActionWithPosition):
 class Move(ActionWithDirection):
     """Move an entity in a direction, interaction with obstacles."""
 
-    def poll(self) -> Action:
-        return MoveTo(self.actor, self.target_pos).poll()
+    def plan(self) -> Action:
+        return MoveTo(self.actor, self.target_pos).plan()
 
 
 class MoveTowards(ActionWithPosition):
     """Move towards and possibly interact with destination."""
 
-    def poll(self) -> Action:
+    def plan(self) -> Action:
         dx = self.target_pos[0] - self.location.x
         dy = self.target_pos[1] - self.location.y
         distance = max(abs(dx), abs(dy))
         dx = int(round(dx / distance))
         dy = int(round(dy / distance))
-        return Move(self.actor, (dx, dy)).poll()
+        return Move(self.actor, (dx, dy)).plan()
 
 
 class Attack(ActionWithPosition):
     """Make this entities Fighter attack another entity."""
 
-    def poll(self) -> Attack:
+    def plan(self) -> Attack:
         if self.location.distance_to(*self.target_pos) > 1:
             raise NoAction("That space is too far away to attack.")
         return self
@@ -82,12 +82,12 @@ class Attack(ActionWithPosition):
 class AttackPlayer(Action):
     """Move towards and attack the player."""
 
-    def poll(self) -> Action:
-        return MoveTowards(self.actor, self.map.player.location.xy).poll()
+    def plan(self) -> Action:
+        return MoveTowards(self.actor, self.map.player.location.xy).plan()
 
 
 class Pickup(Action):
-    def poll(self) -> Action:
+    def plan(self) -> Action:
         if not self.map.items.get(self.location.xy):
             raise NoAction("There is nothing to pick up.")
         return self

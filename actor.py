@@ -27,12 +27,12 @@ class Actor:
         if ticket is not self.ticket:
             return scheduler.unschedule(ticket)
         try:
-            action = self.ai.poll()
+            action = self.ai.plan()
         except NoAction:
             print(f"Unresolved action with {self}!", file=sys.stderr)
             traceback.print_exc(file=sys.stderr)
             return self.ai.reschedule(100)
-        assert action is action.poll(), f"{action} was not fully resolved, {self}."
+        assert action is action.plan(), f"{action} was not fully resolved, {self}."
         action.act()
 
     @property

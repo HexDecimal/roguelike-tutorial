@@ -25,10 +25,10 @@ class Pathfinder(Action):
         walkable[dest_xy] = True
         self.path: List[Tuple[int, int]] = tcod.path.AStar(walkable).get_path(*self.actor.location.xy, *dest_xy)
 
-    def poll(self) -> Action:
+    def plan(self) -> Action:
         if not self.path:
             raise NoAction("End of path reached.")
-        return actions.MoveTo(self.actor, self.path.pop(0)).poll()
+        return actions.MoveTo(self.actor, self.path.pop(0)).plan()
 
 
 class AI(Action):
@@ -49,7 +49,7 @@ class BasicMonster(AI):
         super().__init__(actor)
         self.path: List[Tuple[int, int]] = []
 
-    def poll(self) -> Action:
+    def plan(self) -> Action:
         owner = self.actor
         map_ = owner.location.map
         if map_.visible[owner.location.xy]:
@@ -57,14 +57,14 @@ class BasicMonster(AI):
             if len(self.path) >= 25:
                 self.path = []
                 try:
-                    return actions.MoveTowards(owner, map_.player.location.xy).poll()
+                    return actions.MoveTowards(owner, map_.player.location.xy).plan()
                 except NoAction:
                     pass
         if not self.path:
-            return actions.Move(owner, (0, 0)).poll()
+            return actions.Move(owner, (0, 0)).plan()
         if owner.location.distance_to(*map_.player.location.xy) <= 1:
-            return actions.AttackPlayer(owner).poll()
-        return actions.MoveTo(owner, self.path.pop(0)).poll()
+            return actions.AttackPlayer(owner).plan()
+        return actions.MoveTo(owner, self.path.pop(0)).plan()
 
 
 class PlayerControl(AI):
