@@ -10,6 +10,7 @@ g_console: tcod.console.Console  # Global console object.
 
 class State(tcod.event.EventDispatch):
     MOVE_KEYS = {
+        # Arrow keys.
         tcod.event.K_LEFT: (-1, 0),
         tcod.event.K_RIGHT: (1, 0),
         tcod.event.K_UP: (0, -1),
@@ -18,15 +19,19 @@ class State(tcod.event.EventDispatch):
         tcod.event.K_END: (-1, 1),
         tcod.event.K_PAGEUP: (1, -1),
         tcod.event.K_PAGEDOWN: (1, 1),
+        tcod.event.K_PERIOD: (0, 0),
+        # Numpad keys.
         tcod.event.K_KP_1: (-1, 1),
         tcod.event.K_KP_2: (0, 1),
         tcod.event.K_KP_3: (1, 1),
         tcod.event.K_KP_4: (-1, 0),
         tcod.event.K_KP_5: (0, 0),
+        tcod.event.K_CLEAR: (0, 0),
         tcod.event.K_KP_6: (1, 0),
         tcod.event.K_KP_7: (-1, -1),
         tcod.event.K_KP_8: (0, -1),
         tcod.event.K_KP_9: (1, -1),
+        # Vi keys.
         tcod.event.K_h: (-1, 0),
         tcod.event.K_j: (0, 1),
         tcod.event.K_k: (0, -1),
@@ -35,8 +40,6 @@ class State(tcod.event.EventDispatch):
         tcod.event.K_u: (1, -1),
         tcod.event.K_b: (-1, 1),
         tcod.event.K_n: (1, 1),
-        tcod.event.K_PERIOD: (0, 0),
-        tcod.event.K_CLEAR: (0, 0),
     }
 
     COMMAND_KEYS = {
