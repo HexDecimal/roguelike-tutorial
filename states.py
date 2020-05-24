@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING
 
 import tcod
 import tcod.console
@@ -74,8 +74,13 @@ class BaseInventoryMenu(GameMapState):
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
         # Add check for item based symbols.
         inventory_ = self.model.player.inventory
-        if chr(event.sym) in inventory_.symbols:
-            index = inventory_.symbols.index(chr(event.sym))
+        char: Optional[str] = None
+        try:
+            char = chr(event.sym)
+        except ValueError:
+            pass  # Suppress exceptions for non-character keys.
+        if char and char in inventory_.symbols:
+            index = inventory_.symbols.index(char)
             if index < len(inventory_.contents):
                 item = inventory_.contents[index]
                 self.pick_item(item)
