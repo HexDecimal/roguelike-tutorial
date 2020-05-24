@@ -28,18 +28,9 @@ class Action:
         """Execute the action for this class."""
         raise NotImplementedError(self)
 
-    def is_player(self) -> bool:
-        """Return True if the active actor is the player entity."""
-        return self.location.map.player is self.actor
-
-    def reschedule(self, interval: int) -> None:
-        """Reschedule this actor to run after `interval` ticks."""
-        assert self.actor.ticket
-        self.actor.ticket = self.map.scheduler.reschedule(self.actor.ticket, interval)
-
     def kill_actor(self, target: Actor) -> None:
         """Kill target and replace with a corpse."""
-        if target is self.map.player:
+        if target.is_player():
             self.report(f"You die.")
         else:
             self.report(f"The {target.fighter.name} dies.")

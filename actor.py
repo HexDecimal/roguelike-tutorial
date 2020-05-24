@@ -31,13 +31,22 @@ class Actor:
         except NoAction:
             print(f"Unresolved action with {self}!", file=sys.stderr)
             traceback.print_exc(file=sys.stderr)
-            return self.ai.reschedule(100)
+            return self.reschedule(100)
         assert action is action.plan(), f"{action} was not fully resolved, {self}."
         action.act()
+
+    def reschedule(self, interval: int) -> None:
+        """Reschedule this actor to run after `interval` ticks."""
+        assert self.ticket
+        self.ticket = self.location.map.scheduler.reschedule(self.ticket, interval)
 
     @property
     def inventory(self) -> Inventory:
         return self.fighter.inventory
+
+    def is_player(self) -> bool:
+        """Return True if this actor is the player."""
+        return self.location.map.player is self
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.location!r}, {self.fighter!r})"

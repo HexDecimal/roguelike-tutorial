@@ -26,9 +26,9 @@ class MoveTo(ActionWithPosition):
 
     def act(self) -> None:
         self.actor.location = self.map[self.target_pos]
-        if self.is_player():
+        if self.actor.is_player():
             self.map.update_fov()
-        self.reschedule(100)
+        self.actor.reschedule(100)
 
 
 class Move(ActionWithDirection):
@@ -64,7 +64,7 @@ class Attack(ActionWithPosition):
 
         damage = self.actor.fighter.power - target.fighter.defense
 
-        if self.is_player():
+        if self.actor.is_player():
             who_desc = f"You attack the {target.fighter.name}"
         else:
             who_desc = f"{self.actor.fighter.name} attacks {target.fighter.name}"
@@ -76,7 +76,7 @@ class Attack(ActionWithPosition):
             self.report(f"{who_desc} but does no damage.")
         if target.fighter.hp <= 0:
             self.kill_actor(target)
-        self.reschedule(100)
+        self.actor.reschedule(100)
 
 
 class AttackPlayer(Action):
@@ -96,14 +96,14 @@ class Pickup(Action):
         for item in self.map.items[self.location.xy]:
             self.report(f"{self.actor.fighter.name} pick up the {item.name}.")
             self.actor.inventory.take(item)
-            return self.reschedule(100)
+            return self.actor.reschedule(100)
 
 
 class ActivateItem(ActionWithItem):
     def act(self) -> None:
         assert self.item in self.actor.inventory.contents
         self.item.activate(self)
-        self.reschedule(100)
+        self.actor.reschedule(100)
 
 
 class DropItem(ActionWithItem):
@@ -112,4 +112,4 @@ class DropItem(ActionWithItem):
         self.item.lift()
         self.item.place(self.actor.location)
         self.report(f"You drop the {self.item.name}.")
-        self.reschedule(100)
+        self.actor.reschedule(100)
