@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Tuple, TYPE_CHECKING
 
-import item as item_
-
 if TYPE_CHECKING:
     from actor import Actor
     from gamemap import GameMap
@@ -27,20 +25,6 @@ class Action:
     def act(self) -> None:
         """Execute the action for this class."""
         raise NotImplementedError(self)
-
-    def kill_actor(self, target: Actor) -> None:
-        """Kill target and replace with a corpse."""
-        if target.is_player():
-            self.report(f"You die.")
-        else:
-            self.report(f"The {target.fighter.name} dies.")
-        item_.Corpse(target).place(target.location)  # Leave behind corpse.
-        # Drop all held items.
-        for item in list(target.fighter.inventory.contents):
-            item.lift()
-            item.place(target.location)
-        target.location.map.actors.remove(target)  # Actually remove the actor.
-        target.ticket = None  # Disable AI.
 
     @property
     def location(self) -> Location:

@@ -9,7 +9,7 @@ import tcod
 import ai
 import fighter
 import gamemap
-import item
+import items
 
 WALL = gamemap.Tile(
     move_cost=0,
@@ -82,7 +82,7 @@ class Room:
     def place_entities(self, gamemap: gamemap.GameMap) -> None:
         """Spawn entities within this room."""
         monsters = random.randint(0, 3)
-        items = random.randint(0, 2)
+        items_spawned = random.randint(0, 2)
         for xy in self.get_free_spaces(gamemap, monsters):
             monsterCls: Type[fighter.Fighter]
             if random.randint(0, 100) < 80:
@@ -91,8 +91,8 @@ class Room:
                 monsterCls = fighter.Troll
             monsterCls.spawn(gamemap[xy])
 
-        for xy in self.get_free_spaces(gamemap, items):
-            item.HealingPotion().place(gamemap[xy])
+        for xy in self.get_free_spaces(gamemap, items_spawned):
+            items.HealingPotion().place(gamemap[xy])
 
 
 def generate(width: int, height: int) -> gamemap.GameMap:
