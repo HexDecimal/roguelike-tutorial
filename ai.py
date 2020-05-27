@@ -23,7 +23,9 @@ class Pathfinder(Action):
         blocker_index = tuple(np.transpose(blocker_pos))
         walkable[blocker_index] = False
         walkable[dest_xy] = True
-        self.path: List[Tuple[int, int]] = tcod.path.AStar(walkable).get_path(*self.actor.location.xy, *dest_xy)
+        self.path: List[Tuple[int, int]] = tcod.path.AStar(walkable).get_path(
+            *self.actor.location.xy, *dest_xy
+        )
 
     def plan(self) -> Action:
         if not self.path:
