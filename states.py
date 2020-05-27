@@ -1,20 +1,23 @@
 from __future__ import annotations
 
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, Generic, Optional, TypeVar, TYPE_CHECKING
 
 import tcod
 import tcod.console
 
 import actions
-from state import State
+from state import State, StateBreak
 import rendering
 
 if TYPE_CHECKING:
+    import action
     from model import Model
     from item import Item
 
+T = TypeVar("T")
 
-class GameMapState(State):
+
+class GameMapState(Generic[T], State[T]):
     def __init__(self, model: Model):
         super().__init__()
         self.model = model
@@ -23,43 +26,38 @@ class GameMapState(State):
         rendering.draw_main_view(self.model, console)
 
 
-class PlayerReady(GameMapState):
+class PlayerReady(GameMapState["action.Action"]):
     def cmd_quit(self) -> None:
         """Save and quit."""
         raise SystemExit()
 
-    def cmd_move(self, x: int, y: int) -> None:
+    def cmd_move(self, x: int, y: int) -> action.Action:
         """Move the player entity."""
-        actions.Move(self.model.player, (x, y)).plan().act()
-        self.running = False
+        return actions.Move(self.model.player, (x, y))
 
-    def cmd_pickup(self) -> None:
-        actions.Pickup(self.model.player).plan().act()
-        self.running = False
+    def cmd_pickup(self) -> action.Action:
+        return actions.Pickup(self.model.player)
 
-    def cmd_inventory(self) -> None:
+    def cmd_inventory(self) -> Optional[action.Action]:
         state = UseInventory(self.model)
-        state.loop()
-        self.running = not state.action_taken
+        return state.loop()
 
-    def cmd_drop(self) -> None:
+    def cmd_drop(self) -> Optional[action.Action]:
         state = DropInventory(self.model)
-        state.loop()
-        self.running = not state.action_taken
+        return state.loop()
 
 
-class GameOver(GameMapState):
+class GameOver(GameMapState[None]):
     def cmd_quit(self) -> None:
         """Save and quit."""
         raise SystemExit()
 
 
-class BaseInventoryMenu(GameMapState):
+class BaseInventoryMenu(GameMapState["action.Action"]):
     desc: str  # Banner text.
 
     def __init__(self, model: Model):
         super().__init__(model)
-        self.action_taken = False  # Becomes True if an action was invoked.
 
     def on_draw(self, console: tcod.console.Console) -> None:
         """Draw inventory menu over the previous state."""
@@ -71,7 +69,7 @@ class BaseInventoryMenu(GameMapState):
             sym = inventory_.symbols[i]
             console.print(0, 2 + i, f"{sym}: {item.name}", **style)
 
-    def ev_keydown(self, event: tcod.event.KeyDown) -> None:
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[action.Action]:
         # Add check for item based symbols.
         inventory_ = self.model.player.inventory
         char: Optional[str] = None
@@ -83,32 +81,27 @@ class BaseInventoryMenu(GameMapState):
             index = inventory_.symbols.index(char)
             if index < len(inventory_.contents):
                 item = inventory_.contents[index]
-                self.pick_item(item)
-                return
-        super().ev_keydown(event)
+                return self.pick_item(item)
+        return super().ev_keydown(event)
 
-    def pick_item(self, item: Item) -> None:
+    def pick_item(self, item: Item) -> Optional[action.Action]:
         """Player selected this item."""
         raise NotImplementedError()
 
     def cmd_quit(self) -> None:
         """Return to previous state."""
-        self.running = False
+        raise StateBreak()
 
 
 class UseInventory(BaseInventoryMenu):
     desc = "Select an item to USE, or press ESC to exit."
 
-    def pick_item(self, item: Item) -> None:
-        self.running = False  # Exit item menu.
-        self.action_taken = True
-        actions.ActivateItem(self.model.player, item).plan().act()
+    def pick_item(self, item: Item) -> action.Action:
+        return actions.ActivateItem(self.model.player, item)
 
 
 class DropInventory(BaseInventoryMenu):
     desc = "Select an item to DROP, or press ESC to exit."
 
-    def pick_item(self, item: Item) -> None:
-        self.running = False  # Exit item menu.
-        self.action_taken = True
-        actions.DropItem(self.model.player, item).plan().act()
+    def pick_item(self, item: Item) -> action.Action:
+        return actions.DropItem(self.model.player, item)

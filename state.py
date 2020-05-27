@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Callable, Generic, Optional, TypeVar
+
 import tcod
 import tcod.console
 import tcod.event
@@ -9,8 +11,14 @@ import g
 
 CONSOLE_MIN_SIZE = (32, 10)  # The smallest acceptable main console size.
 
+T = TypeVar("T")
 
-class State(tcod.event.EventDispatch):
+
+class StateBreak(Exception):
+    """Breaks out of the active State.loop and makes it return None."""
+
+
+class State(Generic[T], tcod.event.EventDispatch[T]):
     MOVE_KEYS = {
         # Arrow keys.
         tcod.event.K_LEFT: (-1, 0),
@@ -51,48 +59,50 @@ class State(tcod.event.EventDispatch):
         tcod.event.K_ESCAPE: "quit",
     }
 
-    def __init__(self) -> None:
-        self.running = False
-
-    def loop(self) -> None:
+    def loop(self) -> Optional[T]:
         """Run a state based game loop."""
-        self.running = True
-        while self.running:
+        while True:
             self.on_draw(g.console)
             g.context.present(g.console, keep_aspect=True, integer_scaling=True)
             for event in tcod.event.wait():
                 if event.type == "WINDOWRESIZED":
                     g.console = configure_console()
-                self.dispatch(event)
-                if not self.running:
-                    break  # Events may set self.running to False.
+                try:
+                    value = self.dispatch(event)
+                except StateBreak:
+                    return None  # Events may raise StateBreak to exit this state.
+                if value is not None:
+                    return value
 
     def on_draw(self, console: tcod.console.Console) -> None:
         raise NotImplementedError()
 
-    def ev_quit(self, event: tcod.event.Quit) -> None:
-        self.cmd_quit()
+    def ev_quit(self, event: tcod.event.Quit) -> Optional[T]:
+        return self.cmd_quit()
 
-    def ev_keydown(self, event: tcod.event.KeyDown) -> None:
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[T]:
+        func: Callable[[], Optional[T]]
         if event.sym in self.COMMAND_KEYS:
-            getattr(self, f"cmd_{self.COMMAND_KEYS[event.sym]}")()
+            func = getattr(self, f"cmd_{self.COMMAND_KEYS[event.sym]}")
+            return func()
         elif event.sym in self.MOVE_KEYS:
-            self.cmd_move(*self.MOVE_KEYS[event.sym])
+            return self.cmd_move(*self.MOVE_KEYS[event.sym])
+        return None
 
-    def cmd_quit(self) -> None:
+    def cmd_quit(self) -> Optional[T]:
         """Save and quit."""
         raise SystemExit()
 
-    def cmd_move(self, x: int, y: int) -> None:
+    def cmd_move(self, x: int, y: int) -> Optional[T]:
         pass
 
-    def cmd_pickup(self) -> None:
+    def cmd_pickup(self) -> Optional[T]:
         pass
 
-    def cmd_inventory(self) -> None:
+    def cmd_inventory(self) -> Optional[T]:
         pass
 
-    def cmd_drop(self) -> None:
+    def cmd_drop(self) -> Optional[T]:
         pass
 
 

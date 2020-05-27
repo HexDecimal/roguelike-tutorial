@@ -71,7 +71,10 @@ class PlayerControl(AI):
     def act(self) -> None:
         ticket = self.actor.ticket
         while ticket is self.actor.ticket:
+            next_action = states.PlayerReady(self.actor.location.map.model).loop()
+            if next_action is None:
+                continue
             try:
-                states.PlayerReady(self.actor.location.map.model).loop()
+                next_action.plan().act()
             except Impossible as exc:
                 self.report(exc.args[0])
