@@ -10,8 +10,11 @@ if TYPE_CHECKING:
     from model import Model
 
 
-class NoAction(Exception):
-    pass
+class Impossible(Exception):
+    """Exception raised when an action can not be performed.
+
+    Includes the reason as the exception message.
+    """
 
 
 class Action:

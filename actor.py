@@ -5,7 +5,7 @@ import sys
 import traceback
 from typing import Optional, Type, TYPE_CHECKING
 
-from action import NoAction
+from action import Impossible
 
 if TYPE_CHECKING:
     from ai import AI
@@ -28,7 +28,7 @@ class Actor:
             return scheduler.unschedule(ticket)
         try:
             action = self.ai.plan()
-        except NoAction:
+        except Impossible:
             print(f"Unresolved action with {self}!", file=sys.stderr)
             traceback.print_exc(file=sys.stderr)
             return self.reschedule(100)

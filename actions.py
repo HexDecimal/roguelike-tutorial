@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from action import (
-    NoAction,
+    Impossible,
     Action,
     ActionWithPosition,
     ActionWithDirection,
@@ -40,7 +40,7 @@ class MoveTo(ActionWithPosition):
         if self.map.fighter_at(*self.target_pos):
             return Attack(self.actor, self.target_pos).plan()
         if self.map.is_blocked(*self.target_pos):
-            raise NoAction("That way is blocked.")
+            raise Impossible("That way is blocked.")
         return self
 
     def act(self) -> None:
@@ -74,7 +74,7 @@ class Attack(ActionWithPosition):
 
     def plan(self) -> Attack:
         if self.location.distance_to(*self.target_pos) > 1:
-            raise NoAction("That space is too far away to attack.")
+            raise Impossible("That space is too far away to attack.")
         return self
 
     def act(self) -> None:
@@ -108,7 +108,7 @@ class AttackPlayer(Action):
 class Pickup(Action):
     def plan(self) -> Action:
         if not self.map.items.get(self.location.xy):
-            raise NoAction("There is nothing to pick up.")
+            raise Impossible("There is nothing to pick up.")
         return self
 
     def act(self) -> None:

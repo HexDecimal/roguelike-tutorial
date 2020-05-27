@@ -5,7 +5,7 @@ from typing import List, Tuple, TYPE_CHECKING
 import numpy as np  # type: ignore
 import tcod.path
 
-from action import NoAction, Action
+from action import Impossible, Action
 import actions
 import states
 
@@ -27,7 +27,7 @@ class Pathfinder(Action):
 
     def plan(self) -> Action:
         if not self.path:
-            raise NoAction("End of path reached.")
+            raise Impossible("End of path reached.")
         return actions.MoveTo(self.actor, self.path.pop(0)).plan()
 
 
@@ -58,7 +58,7 @@ class BasicMonster(AI):
                 self.path = []
                 try:
                     return actions.MoveTowards(owner, map_.player.location.xy).plan()
-                except NoAction:
+                except Impossible:
                     pass
         if not self.path:
             return actions.Move(owner, (0, 0)).plan()
@@ -73,5 +73,5 @@ class PlayerControl(AI):
         while ticket is self.actor.ticket:
             try:
                 states.PlayerReady(self.actor.location.map.model).loop()
-            except NoAction as exc:
+            except Impossible as exc:
                 self.report(exc.args[0])
