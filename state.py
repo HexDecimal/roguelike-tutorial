@@ -4,8 +4,10 @@ import tcod
 import tcod.console
 import tcod.event
 
+import g
+
+
 CONSOLE_MIN_SIZE = (32, 10)  # The smallest acceptable main console size.
-g_console: tcod.console.Console  # Global console object.
 
 
 class State(tcod.event.EventDispatch):
@@ -54,14 +56,13 @@ class State(tcod.event.EventDispatch):
 
     def loop(self) -> None:
         """Run a state based game loop."""
-        global g_console
         self.running = True
         while self.running:
-            self.on_draw(g_console)
-            tcod.console_flush(g_console)
+            self.on_draw(g.console)
+            g.context.present(g.console, keep_aspect=True, integer_scaling=True)
             for event in tcod.event.wait():
                 if event.type == "WINDOWRESIZED":
-                    g_console = configure_console()
+                    g.console = configure_console()
                 self.dispatch(event)
                 if not self.running:
                     break  # Events may set self.running to False.
@@ -97,7 +98,6 @@ class State(tcod.event.EventDispatch):
 
 def configure_console() -> tcod.console.Console:
     """Return a new main console with an automatically determined size."""
-    width, height = tcod.console.recommended_size()
-    width = max(width, CONSOLE_MIN_SIZE[0])
-    height = max(height, CONSOLE_MIN_SIZE[1])
-    return tcod.console.Console(width, height, order="F")
+    return tcod.Console(
+        *g.context.recommended_console_size(*CONSOLE_MIN_SIZE), order="F"
+    )
