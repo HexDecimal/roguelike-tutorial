@@ -27,7 +27,7 @@ class Action:
 
     def act(self) -> None:
         """Execute the action for this class."""
-        raise NotImplementedError(self)
+        raise RuntimeError(f"{self.__class__} has no act implementation.")
 
     @property
     def location(self) -> Location:
