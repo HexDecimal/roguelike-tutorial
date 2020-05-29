@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Tuple, TYPE_CHECKING
+from typing import List, Tuple, TYPE_CHECKING, Optional
 
 import numpy as np  # type: ignore
 import tcod.path
@@ -13,60 +13,56 @@ if TYPE_CHECKING:
     from actor import Actor
 
 
-class Pathfinder(Action):
+class PathTo(Action):
     def __init__(self, actor: Actor, dest_xy: Tuple[int, int]) -> None:
         super().__init__(actor)
+        self.subaction: Optional[Action] = None
+        self.dest_xy = dest_xy
+        self.path_xy: List[Tuple[int, int]] = self.compute_path()
 
+    def compute_path(self) -> List[Tuple[int, int]]:
         map_ = self.actor.location.map
         walkable = np.copy(map_.tiles["move_cost"])
         blocker_pos = [e.location.xy for e in map_.actors]
         blocker_index = tuple(np.transpose(blocker_pos))
-        walkable[blocker_index] = False
-        walkable[dest_xy] = True
-        self.path: List[Tuple[int, int]] = tcod.path.AStar(walkable).get_path(
-            *self.actor.location.xy, *dest_xy
+        walkable[blocker_index] = 50
+        walkable[self.dest_xy] = 1
+        return tcod.path.AStar(walkable).get_path(
+            *self.actor.location.xy, *self.dest_xy
         )
 
     def plan(self) -> Action:
-        if not self.path:
+        if not self.path_xy:
             raise Impossible("End of path reached.")
-        return actions.MoveTo(self.actor, self.path.pop(0)).plan()
+        self.subaction = actions.MoveTo(self.actor, self.path_xy[0]).plan()
+        return self
+
+    def act(self) -> None:
+        assert self.subaction
+        self.subaction.act()
+        if self.path_xy[0] == self.actor.location.xy:
+            self.path_xy.pop(0)
 
 
 class AI(Action):
-    def get_path(
-        self, owner: Actor, target_xy: Tuple[int, int]
-    ) -> List[Tuple[int, int]]:
-        map_ = owner.location.map
-        walkable = np.copy(map_.tiles["move_cost"])
-        blocker_pos = [e.location.xy for e in map_.actors]
-        blocker_index = tuple(np.transpose(blocker_pos))
-        walkable[blocker_index] = False
-        walkable[target_xy] = True
-        return tcod.path.AStar(walkable).get_path(*owner.location.xy, *target_xy)
+    pass
 
 
 class BasicMonster(AI):
     def __init__(self, actor: Actor) -> None:
         super().__init__(actor)
-        self.path: List[Tuple[int, int]] = []
+        self.pathfinder: Optional[PathTo] = None
 
     def plan(self) -> Action:
         owner = self.actor
         map_ = owner.location.map
         if map_.visible[owner.location.xy]:
-            self.path = self.get_path(owner, map_.player.location.xy)
-            if len(self.path) >= 25:
-                self.path = []
-                try:
-                    return actions.MoveTowards(owner, map_.player.location.xy).plan()
-                except Impossible:
-                    pass
-        if not self.path:
+            self.pathfinder = PathTo(owner, map_.player.location.xy)
+        if not self.pathfinder:
             return actions.Move(owner, (0, 0)).plan()
         if owner.location.distance_to(*map_.player.location.xy) <= 1:
             return actions.AttackPlayer(owner).plan()
-        return actions.MoveTo(owner, self.path.pop(0)).plan()
+        return self.pathfinder.plan()
 
 
 class PlayerControl(AI):

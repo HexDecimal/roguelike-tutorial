@@ -32,9 +32,11 @@ class MoveTo(ActionWithPosition):
     """Move an entity to a position, interacting with obstacles."""
 
     def plan(self) -> Action:
-        assert (
-            self.actor.location.distance_to(*self.target_pos) <= 1
-        ), "Can't move from %s to %s" % (self.actor.location.xy, self.target_pos)
+        if self.actor.location.distance_to(*self.target_pos) > 1:
+            # Enforces that the actor is only moving a short distance.
+            raise Impossible(
+                "Can't move from %s to %s." % (self.actor.location.xy, self.target_pos)
+            )
         if self.actor.location.xy == self.target_pos:
             return self
         if self.map.fighter_at(*self.target_pos):
