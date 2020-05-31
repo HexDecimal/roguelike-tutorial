@@ -4,6 +4,8 @@ from typing import Optional, TYPE_CHECKING
 
 import graphic
 
+from action import Impossible
+
 if TYPE_CHECKING:
     from action import ActionWithItem
     from location import Location
@@ -40,15 +42,18 @@ class Item(graphic.Graphic):
         except KeyError:
             items[location.xy] = [self]
 
-    def activate(self, action: ActionWithItem) -> None:
+    def plan_item(self, action: ActionWithItem) -> ActionWithItem:
         """Item activated as part of an action.
 
         Assume that action has an actor which is holding this items entity.
         """
-        action.report(f"You can do nothing with the {self.name}.")
-        raise NotImplementedError()
+        raise Impossible(f"You can do nothing with the {self.name}.")
 
     def consume(self, action: ActionWithItem) -> None:
         """Remove this item from the actors inventory."""
         assert action.item is self
         action.item.lift()
+
+    def action_drink(self, action: ActionWithItem) -> None:
+        """Drink this item."""
+        raise Impossible("You can't drink that.")

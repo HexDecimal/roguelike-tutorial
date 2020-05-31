@@ -121,10 +121,9 @@ class Pickup(Action):
 
 
 class ActivateItem(ActionWithItem):
-    def act(self) -> None:
+    def plan(self) -> ActionWithItem:
         assert self.item in self.actor.inventory.contents
-        self.item.activate(self)
-        self.actor.reschedule(100)
+        return self.item.plan_item(self)
 
 
 class DropItem(ActionWithItem):
@@ -133,4 +132,11 @@ class DropItem(ActionWithItem):
         self.item.lift()
         self.item.place(self.actor.location)
         self.report(f"You drop the {self.item.name}.")
+        self.actor.reschedule(100)
+
+
+class DrinkItem(ActionWithItem):
+    def act(self) -> None:
+        assert self.item in self.actor.inventory.contents
+        self.item.action_drink(self)
         self.actor.reschedule(100)
