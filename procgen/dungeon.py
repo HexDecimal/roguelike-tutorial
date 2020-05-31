@@ -1,3 +1,4 @@
+"""Dungeon level generator."""
 from __future__ import annotations
 
 import random

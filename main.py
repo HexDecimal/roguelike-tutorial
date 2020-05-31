@@ -6,7 +6,7 @@ import warnings
 import tcod
 
 import model
-import procgen
+import procgen.dungeon
 import g
 
 
@@ -28,7 +28,7 @@ def main() -> None:
     ) as g.context:
         g.console = tcod.Console(*g.context.recommended_console_size(), order="F")
         model_ = model.Model()
-        model_.active_map = procgen.generate(map_width, map_height)
+        model_.active_map = procgen.dungeon.generate(map_width, map_height)
         model_.active_map.model = model_
         model_.loop()
 
