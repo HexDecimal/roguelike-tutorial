@@ -10,7 +10,7 @@ import tcod
 from actions import ai
 import races
 import gamemap
-import items
+import items.potions
 import races.common
 
 WALL = gamemap.Tile(
@@ -94,7 +94,7 @@ class Room:
             monsterCls.spawn(gamemap[xy])
 
         for xy in self.get_free_spaces(gamemap, items_spawned):
-            items.HealingPotion().place(gamemap[xy])
+            items.potions.HealingPotion().place(gamemap[xy])
 
 
 def generate(width: int, height: int) -> gamemap.GameMap:

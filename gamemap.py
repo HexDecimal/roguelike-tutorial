@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     import tcod.console
     from actor import Actor
     from graphic import Graphic
-    from item import Item
+    from items import Item
     from model import Model
 
 # Data types for handling game map tiles:

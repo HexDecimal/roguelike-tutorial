@@ -3,12 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import effect
-from item import Item
-
+from items import Item
+import actions.common
 
 if TYPE_CHECKING:
-    from actor import Actor
-    from actions import ActionWithItem, common
+    from actions import ActionWithItem
 
 
 class Potion(Item):
@@ -22,7 +21,7 @@ class Potion(Item):
 
     def plan_item(self, action: ActionWithItem) -> ActionWithItem:
         """Potions will forward to a drink action."""
-        return common.DrinkItem(action.actor, self)
+        return actions.common.DrinkItem(action.actor, self)
 
     def action_drink(self, action: ActionWithItem) -> None:
         """Consume this potion and active its effect."""
@@ -36,13 +35,3 @@ class HealingPotion(Potion):
 
     def __init__(self) -> None:
         super().__init__(effect.Healing(4))
-
-
-class Corpse(Item):
-    char = ord("%")
-    color = (127, 0, 0)
-    render_order = 2
-
-    def __init__(self, actor: Actor) -> None:
-        super().__init__()
-        self.name = f"{actor.fighter.name} Corpse"

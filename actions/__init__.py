@@ -5,7 +5,7 @@ from typing import Tuple, TYPE_CHECKING
 if TYPE_CHECKING:
     from actor import Actor
     from gamemap import GameMap
-    from item import Item
+    from items import Item
     from location import Location
     from model import Model
 

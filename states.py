@@ -12,7 +12,7 @@ import rendering
 if TYPE_CHECKING:
     import actions
     from model import Model
-    from item import Item
+    from items import Item
 
 T = TypeVar("T")
 

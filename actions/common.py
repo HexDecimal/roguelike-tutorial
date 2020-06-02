@@ -7,7 +7,7 @@ from actions import (
     ActionWithDirection,
     ActionWithItem,
 )
-import items
+import items.other
 
 
 class DeathAction(Action):
@@ -19,7 +19,7 @@ class DeathAction(Action):
             self.report("You die.")
         else:
             self.report(f"The {self.actor.fighter.name} dies.")
-        items.Corpse(self.actor).place(self.actor.location)  # Leave behind corpse.
+        items.other.Corpse(self.actor).place(self.actor.location)
         # Drop all held items.
         for item in list(self.actor.fighter.inventory.contents):
             item.lift()
