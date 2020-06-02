@@ -5,10 +5,10 @@ import sys
 import traceback
 from typing import Optional, Type, TYPE_CHECKING
 
-from action import Impossible
+from actions import Impossible
 
 if TYPE_CHECKING:
-    from action import Action
+    from actions import Action
     from races import Fighter
     from location import Location
     from inventory import Inventory

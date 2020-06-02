@@ -5,12 +5,12 @@ from typing import Any, Generic, Optional, TypeVar, TYPE_CHECKING
 import tcod
 import tcod.console
 
-import actions
+from actions import common
 from state import State, StateBreak
 import rendering
 
 if TYPE_CHECKING:
-    import action
+    import actions
     from model import Model
     from item import Item
 
@@ -26,23 +26,23 @@ class GameMapState(Generic[T], State[T]):
         rendering.draw_main_view(self.model, console)
 
 
-class PlayerReady(GameMapState["action.Action"]):
+class PlayerReady(GameMapState["actions.Action"]):
     def cmd_quit(self) -> None:
         """Save and quit."""
         raise SystemExit()
 
-    def cmd_move(self, x: int, y: int) -> action.Action:
+    def cmd_move(self, x: int, y: int) -> actions.Action:
         """Move the player entity."""
-        return actions.Move(self.model.player, (x, y))
+        return common.Move(self.model.player, (x, y))
 
-    def cmd_pickup(self) -> action.Action:
-        return actions.Pickup(self.model.player)
+    def cmd_pickup(self) -> actions.Action:
+        return common.Pickup(self.model.player)
 
-    def cmd_inventory(self) -> Optional[action.Action]:
+    def cmd_inventory(self) -> Optional[actions.Action]:
         state = UseInventory(self.model)
         return state.loop()
 
-    def cmd_drop(self) -> Optional[action.Action]:
+    def cmd_drop(self) -> Optional[actions.Action]:
         state = DropInventory(self.model)
         return state.loop()
 
@@ -53,7 +53,7 @@ class GameOver(GameMapState[None]):
         raise SystemExit()
 
 
-class BaseInventoryMenu(GameMapState["action.Action"]):
+class BaseInventoryMenu(GameMapState["actions.Action"]):
     desc: str  # Banner text.
 
     def __init__(self, model: Model):
@@ -69,7 +69,7 @@ class BaseInventoryMenu(GameMapState["action.Action"]):
             sym = inventory_.symbols[i]
             console.print(0, 2 + i, f"{sym}: {item.name}", **style)
 
-    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[action.Action]:
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[actions.Action]:
         # Add check for item based symbols.
         inventory_ = self.model.player.inventory
         char: Optional[str] = None
@@ -84,7 +84,7 @@ class BaseInventoryMenu(GameMapState["action.Action"]):
                 return self.pick_item(item)
         return super().ev_keydown(event)
 
-    def pick_item(self, item: Item) -> Optional[action.Action]:
+    def pick_item(self, item: Item) -> Optional[actions.Action]:
         """Player selected this item."""
         raise NotImplementedError()
 
@@ -96,12 +96,12 @@ class BaseInventoryMenu(GameMapState["action.Action"]):
 class UseInventory(BaseInventoryMenu):
     desc = "Select an item to USE, or press ESC to exit."
 
-    def pick_item(self, item: Item) -> action.Action:
-        return actions.ActivateItem(self.model.player, item)
+    def pick_item(self, item: Item) -> actions.Action:
+        return common.ActivateItem(self.model.player, item)
 
 
 class DropInventory(BaseInventoryMenu):
     desc = "Select an item to DROP, or press ESC to exit."
 
-    def pick_item(self, item: Item) -> action.Action:
-        return actions.DropItem(self.model.player, item)
+    def pick_item(self, item: Item) -> actions.Action:
+        return common.DropItem(self.model.player, item)

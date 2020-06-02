@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import actions
 import effect
 from item import Item
 
 
 if TYPE_CHECKING:
     from actor import Actor
-    from action import ActionWithItem
+    from actions import ActionWithItem, common
 
 
 class Potion(Item):
@@ -23,7 +22,7 @@ class Potion(Item):
 
     def plan_item(self, action: ActionWithItem) -> ActionWithItem:
         """Potions will forward to a drink action."""
-        return actions.DrinkItem(action.actor, self)
+        return common.DrinkItem(action.actor, self)
 
     def action_drink(self, action: ActionWithItem) -> None:
         """Consume this potion and active its effect."""

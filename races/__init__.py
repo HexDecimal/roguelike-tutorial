@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import Optional, Type, TYPE_CHECKING
 
 import actor
-from ai import BasicMonster
+from actions.ai import BasicMonster
 import graphic
 from inventory import Inventory
 
 
 if TYPE_CHECKING:
-    from action import Action
+    from actions import Action
     from location import Location
 
 

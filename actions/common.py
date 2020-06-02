@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from action import (
+from actions import (
     Impossible,
     Action,
     ActionWithPosition,

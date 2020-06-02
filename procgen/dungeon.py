@@ -7,7 +7,7 @@ from typing import Iterator, List, Tuple, Type
 import numpy as np  # type: ignore
 import tcod
 
-import ai
+from actions import ai
 import races
 import gamemap
 import items

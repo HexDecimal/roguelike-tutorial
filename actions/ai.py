@@ -5,8 +5,8 @@ from typing import List, Tuple, TYPE_CHECKING, Optional
 import numpy as np  # type: ignore
 import tcod.path
 
-from action import Impossible, Action
-import actions
+from actions import Impossible, Action
+import actions.common
 import states
 
 if TYPE_CHECKING:
@@ -34,7 +34,7 @@ class PathTo(Action):
     def plan(self) -> Action:
         if not self.path_xy:
             raise Impossible("End of path reached.")
-        self.subaction = actions.MoveTo(self.actor, self.path_xy[0]).plan()
+        self.subaction = actions.common.MoveTo(self.actor, self.path_xy[0]).plan()
         return self
 
     def act(self) -> None:
@@ -59,9 +59,9 @@ class BasicMonster(AI):
         if map_.visible[owner.location.xy]:
             self.pathfinder = PathTo(owner, map_.player.location.xy)
         if not self.pathfinder:
-            return actions.Move(owner, (0, 0)).plan()
+            return actions.common.Move(owner, (0, 0)).plan()
         if owner.location.distance_to(*map_.player.location.xy) <= 1:
-            return actions.AttackPlayer(owner).plan()
+            return actions.common.AttackPlayer(owner).plan()
         return self.pathfinder.plan()
 
 

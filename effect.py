@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from action import Action
+    from actions import Action
     from actor import Actor
 
 

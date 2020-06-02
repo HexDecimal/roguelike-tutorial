@@ -4,10 +4,10 @@ from typing import Optional, TYPE_CHECKING
 
 import graphic
 
-from action import Impossible
+from actions import Impossible
 
 if TYPE_CHECKING:
-    from action import ActionWithItem
+    from actions import ActionWithItem
     from location import Location
     from inventory import Inventory
 
