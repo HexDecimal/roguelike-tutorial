@@ -6,7 +6,7 @@ import tcod
 import tcod.console
 
 from actions import common
-from state import State, StateBreak
+from states import State, StateBreak
 import rendering
 
 if TYPE_CHECKING:

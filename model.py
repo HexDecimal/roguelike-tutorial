@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, TYPE_CHECKING
 
-import states
+import states.ingame
 
 if TYPE_CHECKING:
     from actor import Actor
@@ -46,6 +46,6 @@ class Model:
     def loop(self) -> None:
         while True:
             if self.is_player_dead():
-                states.GameOver(self).loop()
+                states.ingame.GameOver(self).loop()
                 continue
             self.active_map.scheduler.invoke_next()

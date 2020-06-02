@@ -7,7 +7,7 @@ import tcod.path
 
 from actions import Impossible, Action
 import actions.common
-import states
+from states import ingame
 
 if TYPE_CHECKING:
     from actor import Actor
@@ -69,7 +69,7 @@ class PlayerControl(AI):
     def act(self) -> None:
         ticket = self.actor.ticket
         while ticket is self.actor.ticket:
-            next_action = states.PlayerReady(self.actor.location.map.model).loop()
+            next_action = ingame.PlayerReady(self.actor.location.map.model).loop()
             if next_action is None:
                 continue
             try:
