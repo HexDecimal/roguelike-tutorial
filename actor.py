@@ -8,15 +8,15 @@ from typing import Optional, Type, TYPE_CHECKING
 from action import Impossible
 
 if TYPE_CHECKING:
-    from ai import AI
-    from fighter import Fighter
+    from action import Action
+    from races import Fighter
     from location import Location
     from inventory import Inventory
     from tqueue import TurnQueue, Ticket
 
 
 class Actor:
-    def __init__(self, location: Location, fighter: Fighter, ai_cls: Type[AI]):
+    def __init__(self, location: Location, fighter: Fighter, ai_cls: Type[Action]):
         self.location = location
         self.fighter = fighter
         location.map.actors.append(self)

@@ -8,9 +8,10 @@ import numpy as np  # type: ignore
 import tcod
 
 import ai
-import fighter
+import races
 import gamemap
 import items
+import races.common
 
 WALL = gamemap.Tile(
     move_cost=0,
@@ -85,11 +86,11 @@ class Room:
         monsters = random.randint(0, 3)
         items_spawned = random.randint(0, 2)
         for xy in self.get_free_spaces(gamemap, monsters):
-            monsterCls: Type[fighter.Fighter]
+            monsterCls: Type[races.Fighter]
             if random.randint(0, 100) < 80:
-                monsterCls = fighter.Orc
+                monsterCls = races.common.Orc
             else:
-                monsterCls = fighter.Troll
+                monsterCls = races.common.Troll
             monsterCls.spawn(gamemap[xy])
 
         for xy in self.get_free_spaces(gamemap, items_spawned):
@@ -138,7 +139,7 @@ def generate(width: int, height: int) -> gamemap.GameMap:
         rooms.append(new_room)
 
     # Add player to the first room.
-    gm.player = fighter.Player.spawn(gm[rooms[0].center], ai_cls=ai.PlayerControl)
+    gm.player = races.common.Player.spawn(gm[rooms[0].center], ai_cls=ai.PlayerControl)
     gm.actors.append(gm.player)
 
     for room in rooms:
