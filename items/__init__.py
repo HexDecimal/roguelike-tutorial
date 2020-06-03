@@ -42,11 +42,14 @@ class Item(graphic.Graphic):
         except KeyError:
             items[location.xy] = [self]
 
-    def plan_item(self, action: ActionWithItem) -> ActionWithItem:
+    def plan_activate(self, action: ActionWithItem) -> ActionWithItem:
         """Item activated as part of an action.
 
         Assume that action has an actor which is holding this items entity.
         """
+        return action
+
+    def action_activate(self, action: ActionWithItem) -> None:
         raise Impossible(f"You can do nothing with the {self.name}.")
 
     def consume(self, action: ActionWithItem) -> None:

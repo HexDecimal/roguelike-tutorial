@@ -7,25 +7,6 @@ from actions import (
     ActionWithDirection,
     ActionWithItem,
 )
-import items.other
-
-
-class DeathAction(Action):
-    """Perform on-death actions and side-effects."""
-
-    def act(self) -> None:
-        """Kill target and replace with a corpse."""
-        if self.actor.is_player():
-            self.report("You die.")
-        else:
-            self.report(f"The {self.actor.fighter.name} dies.")
-        items.other.Corpse(self.actor).place(self.actor.location)
-        # Drop all held items.
-        for item in list(self.actor.fighter.inventory.contents):
-            item.lift()
-            item.place(self.actor.location)
-        self.actor.location.map.actors.remove(self.actor)  # Actually remove the actor.
-        self.actor.ticket = None  # Disable AI.
 
 
 class MoveTo(ActionWithPosition):
@@ -91,12 +72,10 @@ class Attack(ActionWithPosition):
             who_desc = f"{self.actor.fighter.name} attacks {target.fighter.name}"
 
         if damage > 0:
-            target.fighter.hp -= damage
             self.report(f"{who_desc} for {damage} hit points.")
+            target.damage(damage)
         else:
             self.report(f"{who_desc} but does no damage.")
-        if target.fighter.hp <= 0:
-            DeathAction(target).plan().act()
         self.actor.reschedule(100)
 
 
@@ -123,7 +102,12 @@ class Pickup(Action):
 class ActivateItem(ActionWithItem):
     def plan(self) -> ActionWithItem:
         assert self.item in self.actor.inventory.contents
-        return self.item.plan_item(self)
+        return self.item.plan_activate(self)
+
+    def act(self) -> None:
+        assert self.item in self.actor.inventory.contents
+        self.item.action_activate(self)
+        self.actor.reschedule(100)
 
 
 class DropItem(ActionWithItem):

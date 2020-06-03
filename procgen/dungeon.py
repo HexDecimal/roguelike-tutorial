@@ -11,6 +11,7 @@ from actions import ai
 import races
 import gamemap
 import items.potions
+import items.scrolls
 import races.common
 
 WALL = gamemap.Tile(
@@ -86,15 +87,18 @@ class Room:
         monsters = random.randint(0, 3)
         items_spawned = random.randint(0, 2)
         for xy in self.get_free_spaces(gamemap, monsters):
-            monsterCls: Type[races.Fighter]
+            monster_cls: Type[races.Fighter]
             if random.randint(0, 100) < 80:
-                monsterCls = races.common.Orc
+                monster_cls = races.common.Orc
             else:
-                monsterCls = races.common.Troll
-            monsterCls.spawn(gamemap[xy])
+                monster_cls = races.common.Troll
+            monster_cls.spawn(gamemap[xy])
 
         for xy in self.get_free_spaces(gamemap, items_spawned):
-            items.potions.HealingPotion().place(gamemap[xy])
+            item_cls = random.choice(
+                [items.potions.HealingPotion, items.scrolls.LightningScroll]
+            )
+            item_cls().place(gamemap[xy])
 
 
 def generate(width: int, height: int) -> gamemap.GameMap:

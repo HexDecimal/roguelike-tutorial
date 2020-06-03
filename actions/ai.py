@@ -62,7 +62,11 @@ class BasicMonster(AI):
             return actions.common.Move(owner, (0, 0)).plan()
         if owner.location.distance_to(*map_.player.location.xy) <= 1:
             return actions.common.AttackPlayer(owner).plan()
-        return self.pathfinder.plan()
+        try:
+            return self.pathfinder.plan()
+        except Impossible:
+            self.pathfinder = None
+            return actions.common.Move(owner, (0, 0)).plan()
 
 
 class PlayerControl(AI):

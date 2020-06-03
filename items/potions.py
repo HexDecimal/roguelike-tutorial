@@ -19,7 +19,7 @@ class Potion(Item):
         super().__init__()
         self.my_effect = my_effect
 
-    def plan_item(self, action: ActionWithItem) -> ActionWithItem:
+    def plan_activate(self, action: ActionWithItem) -> ActionWithItem:
         """Potions will forward to a drink action."""
         return actions.common.DrinkItem(action.actor, self)
 
