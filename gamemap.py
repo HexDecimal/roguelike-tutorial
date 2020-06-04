@@ -95,22 +95,44 @@ class GameMap:
         )
         self.explored |= self.visible
 
+    def get_camera_pos(self, console: tcod.console.Console) -> Tuple[int, int]:
+        """Get the upper left camera position, assuming camera_xy is the center."""
+        cam_x = self.camera_xy[0] - console.width // 2
+        cam_y = self.camera_xy[1] - console.height // 2
+        return cam_x, cam_y
+
+    def get_camera_views(
+        self, console: tcod.console.Console
+    ) -> Tuple[Tuple[slice, slice], Tuple[slice, slice]]:
+        """Return (screen_view, world_view) as 2D slices for use with NumPy."""
+        cam_x, cam_y = self.get_camera_pos(console)
+
+        screen_left = max(0, -cam_x)
+        screen_top = max(0, -cam_y)
+
+        world_left = max(0, cam_x)
+        world_top = max(0, cam_y)
+
+        screen_width = min(console.width - screen_left, self.width - world_left)
+        screen_height = min(console.height - screen_top, self.height - world_top)
+
+        screen_view = np.s_[
+            screen_left : screen_left + screen_width,
+            screen_top : screen_top + screen_height,
+        ]
+        world_view = np.s_[
+            world_left : world_left + screen_width,
+            world_top : world_top + screen_height,
+        ]
+
+        return screen_view, world_view
+
     def render(self, console: tcod.console.Console) -> None:
         """Render this maps contents onto a console."""
-        # Get the view size from the window size or world size,
-        # whichever is smaller.
-        UI_SIZE = 5
-        view_width = min(self.width, console.width)
-        view_height = min(self.height, console.height - UI_SIZE)
-        # Get the upper left camera position, assuming camera_xy is the center.
-        cam_x = self.camera_xy[0] - view_width // 2
-        cam_y = self.camera_xy[1] - view_height // 2
-        cam_x = max(0, min(cam_x, self.width - view_width))
-        cam_y = max(0, min(cam_y, self.height - view_height))
+        cam_x, cam_y = self.get_camera_pos(console)
 
         # Get the screen and world view slices.
-        screen_view = np.s_[:view_width, :view_height]
-        world_view = np.s_[cam_x : cam_x + view_width, cam_y : cam_y + view_height]
+        screen_view, world_view = self.get_camera_views(console)
 
         # Draw the console based on visible or explored areas.
         console.tiles_rgb[screen_view] = np.select(
@@ -123,14 +145,14 @@ class GameMap:
         visible_objs: Dict[Tuple[int, int], List[Graphic]] = defaultdict(list)
         for obj in self.actors:
             obj_x, obj_y = obj.location.x - cam_x, obj.location.y - cam_y
-            if not (0 <= obj_x < view_width and 0 <= obj_y < view_height):
+            if not (0 <= obj_x < console.width and 0 <= obj_y < console.height):
                 continue
             if not self.visible[obj.location.xy]:
                 continue
             visible_objs[obj_x, obj_y].append(obj.fighter)
         for (item_x, item_y), items in self.items.items():
             obj_x, obj_y = item_x - cam_x, item_y - cam_y
-            if not (0 <= obj_x < view_width and 0 <= obj_y < view_height):
+            if not (0 <= obj_x < console.width and 0 <= obj_y < console.height):
                 continue
             if not self.visible[item_x, item_y]:
                 continue

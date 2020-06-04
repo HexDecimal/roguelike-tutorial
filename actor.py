@@ -36,10 +36,17 @@ class Actor:
         assert action is action.plan(), f"{action} was not fully resolved, {self}."
         action.act()
 
+    @property
+    def scheduler(self) -> TurnQueue:
+        return self.location.map.scheduler
+
     def reschedule(self, interval: int) -> None:
         """Reschedule this actor to run after `interval` ticks."""
-        assert self.ticket
-        self.ticket = self.location.map.scheduler.reschedule(self.ticket, interval)
+        if self.ticket is None:
+            # Actor has died during their own turn.
+            assert not self.fighter.alive
+            return
+        self.ticket = self.scheduler.reschedule(self.ticket, interval)
 
     @property
     def inventory(self) -> Inventory:
@@ -58,6 +65,8 @@ class Actor:
 
     def die(self) -> None:
         """Perform on death logic."""
+        assert self.fighter.alive
+        self.fighter.alive = False
         if self.is_visible():
             if self.is_player():
                 self.location.map.model.report("You die.")
@@ -69,6 +78,9 @@ class Actor:
             item.lift()
             item.place(self.location)
         self.location.map.actors.remove(self)  # Actually remove the actor.
+        if self.scheduler.heap[0] is self.ticket:
+            # If this actor killed itself during its turn then it must edit the queue.
+            self.scheduler.unschedule(self.ticket)
         self.ticket = None  # Disable AI.
 
     def damage(self, damage: int) -> None:

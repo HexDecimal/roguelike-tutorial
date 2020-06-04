@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Iterator
 
 from actions import Impossible
 from items import Item
+import states.ingame
 
 if TYPE_CHECKING:
     from actions import ActionWithItem
@@ -48,4 +49,34 @@ class LightningScroll(Scroll):
             f"A lighting bolt strikes the {target.fighter.name} for {damage} damage!"
         )
         target.damage(damage)
+        self.consume(action)
+
+
+class FireballScroll(Scroll):
+    name = "Fireball Scroll"
+    color = (255, 32, 32)
+    damage = 12
+    radius = 3
+
+    def action_activate(self, action: ActionWithItem) -> None:
+        selected_xy = states.ingame.PickLocation(
+            action.model, "Select where to cast a fireball.", action.actor.location.xy
+        ).loop()
+        if not selected_xy:
+            raise Impossible("Targeting canceled.")
+        if not action.map.visible[selected_xy]:
+            raise Impossible("You cannot target a tile outside your field of view")
+
+        action.report(
+            f"The fireball explodes, burning everything within {self.radius} tiles!"
+        )
+
+        # Use a copy of the actors list since it may be edited during the loop.
+        for actor in list(action.map.actors):
+            if actor.location.distance_to(*selected_xy) > self.radius:
+                continue
+            action.report(
+                f"The {actor.fighter.name} gets burned for {self.damage} hit points"
+            )
+            actor.damage(self.damage)
         self.consume(action)

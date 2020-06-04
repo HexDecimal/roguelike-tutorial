@@ -57,6 +57,8 @@ class State(Generic[T], tcod.event.EventDispatch[T]):
         tcod.event.K_i: "inventory",
         tcod.event.K_g: "pickup",
         tcod.event.K_ESCAPE: "quit",
+        tcod.event.K_RETURN: "confirm",
+        tcod.event.K_KP_ENTER: "confirm",
     }
 
     def loop(self) -> Optional[T]:
@@ -88,6 +90,9 @@ class State(Generic[T], tcod.event.EventDispatch[T]):
         elif event.sym in self.MOVE_KEYS:
             return self.cmd_move(*self.MOVE_KEYS[event.sym])
         return None
+
+    def cmd_confirm(self) -> Optional[T]:
+        pass
 
     def cmd_quit(self) -> Optional[T]:
         """Save and quit."""

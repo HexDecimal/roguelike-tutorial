@@ -55,4 +55,6 @@ def draw_main_view(model: Model, console: Console) -> None:
         i += tcod.console.get_height_rect(log_width, str(text))
         if i >= 7:
             break
-        console.print_box(x, y - i, log_width, 0, str(text))
+        console.print_box(
+            x, y - i, log_width, 0, str(text), fg=(255, 255, 255), bg=(0, 0, 0)
+        )

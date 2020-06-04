@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Generic, Optional, TypeVar, TYPE_CHECKING
+from typing import Any, Generic, Optional, TypeVar, TYPE_CHECKING, Tuple
 
 import tcod
 import tcod.console
@@ -105,3 +105,36 @@ class DropInventory(BaseInventoryMenu):
 
     def pick_item(self, item: Item) -> actions.Action:
         return common.DropItem(self.model.player, item)
+
+
+class PickLocation(GameMapState[Tuple[int, int]]):
+    """UI mode to ask the user for an x,y location."""
+
+    def __init__(self, model: Model, desc: str, start_xy: Tuple[int, int]) -> None:
+        super().__init__(model)
+        self.desc = desc
+        self.cursor_xy = start_xy
+
+    def on_draw(self, console: tcod.console.Console) -> None:
+        super().on_draw(console)
+        style: Any = {"fg": (255, 255, 255), "bg": (0, 0, 0)}
+        console.print(0, 0, self.desc, **style)
+        cam_x, cam_y = self.model.active_map.get_camera_pos(console)
+        x = self.cursor_xy[0] - cam_x
+        y = self.cursor_xy[1] - cam_y
+        if 0 <= x < console.width and 0 <= y < console.height:
+            console.tiles_rgb[["fg", "bg"]][x, y] = (0, 0, 0), (255, 255, 255)
+
+    def cmd_move(self, x: int, y: int) -> None:
+        x += self.cursor_xy[0]
+        y += self.cursor_xy[1]
+        x = min(max(0, x), self.model.active_map.width - 1)
+        y = min(max(0, y), self.model.active_map.height - 1)
+        self.cursor_xy = x, y
+        self.model.active_map.camera_xy = self.cursor_xy
+
+    def cmd_confirm(self) -> Tuple[int, int]:
+        return self.cursor_xy
+
+    def cmd_quit(self) -> None:
+        raise StateBreak()

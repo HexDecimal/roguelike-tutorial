@@ -23,6 +23,7 @@ class Fighter(graphic.Graphic):
     DEFAULT_AI: Type[Action] = BasicMonster
 
     def __init__(self, inventory: Optional[Inventory] = None) -> None:
+        self.alive = True
         self.max_hp = self.hp
         self.inventory = inventory or Inventory()
 
