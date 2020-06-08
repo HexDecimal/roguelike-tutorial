@@ -6,7 +6,7 @@ import tcod
 import tcod.console
 
 from actions import common
-from states import State, StateBreak
+from states import State, StateBreak, SaveAndQuit
 import rendering
 
 if TYPE_CHECKING:
@@ -27,9 +27,9 @@ class GameMapState(Generic[T], State[T]):
 
 
 class PlayerReady(GameMapState["actions.Action"]):
-    def cmd_quit(self) -> None:
+    def cmd_escape(self) -> None:
         """Save and quit."""
-        raise SystemExit()
+        raise SaveAndQuit()
 
     def cmd_move(self, x: int, y: int) -> actions.Action:
         """Move the player entity."""

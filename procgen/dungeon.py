@@ -105,7 +105,7 @@ class Room:
             item_cls().place(gamemap[xy])
 
 
-def generate(width: int, height: int) -> gamemap.GameMap:
+def generate(width: int = 80, height: int = 45) -> gamemap.GameMap:
     """Return a randomly generated GameMap."""
     room_max_size = 10
     room_min_size = 6

@@ -5,15 +5,13 @@ import warnings
 
 import tcod
 
-import model
-import procgen.dungeon
 import g
+import states.mainmenu
 
 
 def main() -> None:
     screen_width = 720
     screen_height = 480
-    map_width, map_height = 80, 45
 
     tileset = tcod.tileset.load_tilesheet(
         "data/cp437-14.png", 32, 8, tcod.tileset.CHARMAP_CP437
@@ -27,10 +25,7 @@ def main() -> None:
         vsync=True,
     ) as g.context:
         g.console = tcod.Console(*g.context.recommended_console_size(), order="F")
-        model_ = model.Model()
-        model_.active_map = procgen.dungeon.generate(map_width, map_height)
-        model_.active_map.model = model_
-        model_.loop()
+        states.mainmenu.MainMenu().loop()
 
 
 if __name__ == "__main__":

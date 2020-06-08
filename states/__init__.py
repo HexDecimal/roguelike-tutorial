@@ -18,6 +18,10 @@ class StateBreak(Exception):
     """Breaks out of the active State.loop and makes it return None."""
 
 
+class SaveAndQuit(Exception):
+    pass
+
+
 class State(Generic[T], tcod.event.EventDispatch[T]):
     MOVE_KEYS = {
         # Arrow keys.
@@ -56,7 +60,7 @@ class State(Generic[T], tcod.event.EventDispatch[T]):
         tcod.event.K_d: "drop",
         tcod.event.K_i: "inventory",
         tcod.event.K_g: "pickup",
-        tcod.event.K_ESCAPE: "quit",
+        tcod.event.K_ESCAPE: "escape",
         tcod.event.K_RETURN: "confirm",
         tcod.event.K_KP_ENTER: "confirm",
     }
@@ -93,6 +97,9 @@ class State(Generic[T], tcod.event.EventDispatch[T]):
 
     def cmd_confirm(self) -> Optional[T]:
         pass
+
+    def cmd_escape(self) -> Optional[T]:
+        raise StateBreak()
 
     def cmd_quit(self) -> Optional[T]:
         """Save and quit."""
