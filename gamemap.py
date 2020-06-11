@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Dict, List, NamedTuple, Optional, Tuple, TYPE_CHECKING
+from typing import Dict, List, NamedTuple, Optional, Tuple, TYPE_CHECKING, Set
 
 import numpy as np  # type: ignore
 import tcod
@@ -58,7 +58,7 @@ class GameMap:
         self.tiles = np.zeros(self.shape, dtype=tile_dt)
         self.explored = np.zeros(self.shape, dtype=bool)
         self.visible = np.zeros(self.shape, dtype=bool)
-        self.actors: List[Actor] = []
+        self.actors: Set[Actor] = set()
         self.items: Dict[Tuple[int, int], List[Item]] = {}
         self.camera_xy = (0, 0)  # Camera center position.
 

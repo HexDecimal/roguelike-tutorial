@@ -20,7 +20,7 @@ class Actor:
     def __init__(self, location: Location, fighter: Fighter, ai_cls: Type[Action]):
         self.location = location
         self.fighter = fighter
-        location.map.actors.append(self)
+        location.map.actors.add(self)
         self.ticket: Optional[Ticket] = self.scheduler.schedule(0, self.act)
         self.ai = ai_cls(self)
 

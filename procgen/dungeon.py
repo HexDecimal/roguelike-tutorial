@@ -151,7 +151,6 @@ def generate(model: Model, width: int = 80, height: int = 45) -> gamemap.GameMap
 
     # Add player to the first room.
     gm.player = races.common.Player.spawn(gm[rooms[0].center], ai_cls=ai.PlayerControl)
-    gm.actors.append(gm.player)
 
     for room in rooms:
         room.place_entities(gm)
