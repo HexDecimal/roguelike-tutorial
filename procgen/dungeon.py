@@ -130,7 +130,7 @@ def generate(model: Model, width: int = 80, height: int = 45) -> gamemap.GameMap
             continue  # This room intersects with a previous room.
 
         # Mark room inner area as open.
-        gm.tiles[new_room.inner] = FLOOR
+        gm.tiles.T[new_room.inner] = FLOOR
         if rooms:
             # Open a tunnel between rooms.
             if random.randint(0, 99) < 80:
@@ -145,8 +145,8 @@ def generate(model: Model, width: int = 80, height: int = 45) -> gamemap.GameMap
                 t_middle = t_start[0], t_end[1]
             else:
                 t_middle = t_end[0], t_start[1]
-            gm.tiles[tcod.line_where(*t_start, *t_middle)] = FLOOR
-            gm.tiles[tcod.line_where(*t_middle, *t_end)] = FLOOR
+            gm.tiles.T[tcod.line_where(*t_start, *t_middle)] = FLOOR
+            gm.tiles.T[tcod.line_where(*t_middle, *t_end)] = FLOOR
         rooms.append(new_room)
 
     # Add player to the first room.

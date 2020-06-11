@@ -19,6 +19,10 @@ class Location:
     def xy(self, xy: Tuple[int, int]) -> None:
         self.x, self.y = xy
 
+    @property
+    def ij(self) -> Tuple[int, int]:
+        return self.y, self.x
+
     def distance_to(self, x: int, y: int) -> int:
         """Return the approximate number of steps needed to reach x,y."""
         return max(abs(self.x - x), abs(self.y - y))

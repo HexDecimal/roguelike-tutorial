@@ -23,11 +23,11 @@ class PathTo(Action):
     def compute_path(self) -> List[Tuple[int, int]]:
         map_ = self.actor.location.map
         walkable = np.copy(map_.tiles["move_cost"])
-        blocker_pos = [e.location.xy for e in map_.actors]
+        blocker_pos = [e.location.ij for e in map_.actors]
         blocker_index = tuple(np.transpose(blocker_pos))
         walkable[blocker_index] = 50
-        walkable[self.dest_xy] = 1
-        return tcod.path.AStar(walkable).get_path(
+        walkable.T[self.dest_xy] = 1
+        return tcod.path.AStar(walkable.T).get_path(
             *self.actor.location.xy, *self.dest_xy
         )
 
@@ -56,7 +56,7 @@ class BasicMonster(AI):
     def plan(self) -> Action:
         owner = self.actor
         map_ = owner.location.map
-        if map_.visible[owner.location.xy]:
+        if map_.visible[owner.location.ij]:
             self.pathfinder = PathTo(owner, map_.player.location.xy)
         if not self.pathfinder:
             return actions.common.Move(owner, (0, 0)).plan()

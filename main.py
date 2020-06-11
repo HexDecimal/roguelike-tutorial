@@ -24,7 +24,7 @@ def main() -> None:
         renderer=tcod.RENDERER_SDL2,
         vsync=True,
     ) as g.context:
-        g.console = tcod.Console(*g.context.recommended_console_size(), order="F")
+        g.console = tcod.Console(*g.context.recommended_console_size())
         states.mainmenu.MainMenu().loop()
 
 

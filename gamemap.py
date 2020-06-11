@@ -54,10 +54,10 @@ class GameMap:
         self.model = model
         self.width = width
         self.height = height
-        self.shape = width, height
-        self.tiles = np.zeros(self.shape, dtype=tile_dt, order="F")
-        self.explored = np.zeros(self.shape, dtype=bool, order="F")
-        self.visible = np.zeros(self.shape, dtype=bool, order="F")
+        self.shape = height, width
+        self.tiles = np.zeros(self.shape, dtype=tile_dt)
+        self.explored = np.zeros(self.shape, dtype=bool)
+        self.visible = np.zeros(self.shape, dtype=bool)
         self.actors: List[Actor] = []
         self.items: Dict[Tuple[int, int], List[Item]] = {}
         self.camera_xy = (0, 0)  # Camera center position.
@@ -66,7 +66,7 @@ class GameMap:
         """Return True if this position is impassible."""
         if not (0 <= x < self.width and 0 <= y < self.height):
             return True
-        if not self.tiles[x, y]["move_cost"]:
+        if not self.tiles[y, x]["move_cost"]:
             return True
         if any(actor.location.xy == (x, y) for actor in self.actors):
             return True
@@ -86,7 +86,7 @@ class GameMap:
             return
         self.visible = tcod.map.compute_fov(
             transparency=self.tiles["transparent"],
-            pov=self.player.location.xy,
+            pov=self.player.location.ij,
             radius=10,
             light_walls=True,
             algorithm=tcod.FOV_RESTRICTIVE,
@@ -94,7 +94,7 @@ class GameMap:
         self.explored |= self.visible
 
     def get_camera_pos(self, console: tcod.console.Console) -> Tuple[int, int]:
-        """Get the upper left camera position, assuming camera_xy is the center."""
+        """Get the upper left XY camera position, assuming camera_xy is the center."""
         cam_x = self.camera_xy[0] - console.width // 2
         cam_y = self.camera_xy[1] - console.height // 2
         return cam_x, cam_y
@@ -115,12 +115,12 @@ class GameMap:
         screen_height = min(console.height - screen_top, self.height - world_top)
 
         screen_view = np.s_[
-            screen_left : screen_left + screen_width,
             screen_top : screen_top + screen_height,
+            screen_left : screen_left + screen_width,
         ]
         world_view = np.s_[
-            world_left : world_left + screen_width,
             world_top : world_top + screen_height,
+            world_left : world_left + screen_width,
         ]
 
         return screen_view, world_view
@@ -145,21 +145,22 @@ class GameMap:
             obj_x, obj_y = obj.location.x - cam_x, obj.location.y - cam_y
             if not (0 <= obj_x < console.width and 0 <= obj_y < console.height):
                 continue
-            if not self.visible[obj.location.xy]:
+            if not self.visible[obj.location.ij]:
                 continue
-            visible_objs[obj_x, obj_y].append(obj.fighter)
+            visible_objs[obj_y, obj_x].append(obj.fighter)
         for (item_x, item_y), items in self.items.items():
             obj_x, obj_y = item_x - cam_x, item_y - cam_y
             if not (0 <= obj_x < console.width and 0 <= obj_y < console.height):
                 continue
-            if not self.visible[item_x, item_y]:
+            if not self.visible[item_y, item_x]:
                 continue
-            visible_objs[obj_x, obj_y].extend(items)
+            visible_objs[obj_y, obj_x].extend(items)
 
         # Draw the visible entities.
-        for xy, graphics in visible_objs.items():
+        for ij, graphics in visible_objs.items():
             graphic = min(graphics)
-            console.tiles_rgb[["ch", "fg"]][xy] = graphic.char, graphic.color
+            console.tiles_rgb[["ch", "fg"]][ij] = graphic.char, graphic.color
 
     def __getitem__(self, key: Tuple[int, int]) -> MapLocation:
+        """Return the MapLocation for an x,y index."""
         return MapLocation(self, *key)

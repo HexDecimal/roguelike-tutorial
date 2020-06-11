@@ -120,6 +120,4 @@ class State(Generic[T], tcod.event.EventDispatch[T]):
 
 def configure_console() -> tcod.console.Console:
     """Return a new main console with an automatically determined size."""
-    return tcod.Console(
-        *g.context.recommended_console_size(*CONSOLE_MIN_SIZE), order="F"
-    )
+    return tcod.Console(*g.context.recommended_console_size(*CONSOLE_MIN_SIZE))

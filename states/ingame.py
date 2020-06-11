@@ -123,7 +123,7 @@ class PickLocation(GameMapState[Tuple[int, int]]):
         x = self.cursor_xy[0] - cam_x
         y = self.cursor_xy[1] - cam_y
         if 0 <= x < console.width and 0 <= y < console.height:
-            console.tiles_rgb[["fg", "bg"]][x, y] = (0, 0, 0), (255, 255, 255)
+            console.tiles_rgb.T[["fg", "bg"]][x, y] = (0, 0, 0), (255, 255, 255)
 
     def cmd_move(self, x: int, y: int) -> None:
         x += self.cursor_xy[0]

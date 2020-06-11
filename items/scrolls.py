@@ -29,7 +29,7 @@ class LightningScroll(Scroll):
         for actor in action.map.actors:
             if actor is action.actor:
                 continue
-            if not action.map.visible[actor.location.xy]:
+            if not action.map.visible[actor.location.ij]:
                 continue
             yield actor
 
@@ -64,7 +64,7 @@ class FireballScroll(Scroll):
         ).loop()
         if not selected_xy:
             raise Impossible("Targeting canceled.")
-        if not action.map.visible[selected_xy]:
+        if not action.map.visible.T[selected_xy]:
             raise Impossible("You cannot target a tile outside your field of view")
 
         action.report(

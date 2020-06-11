@@ -58,7 +58,7 @@ class Actor:
 
     def is_visible(self) -> bool:
         """Return True if this actor is visible to the player."""
-        return bool(self.location.map.visible[self.location.xy])
+        return bool(self.location.map.visible[self.location.ij])
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.location!r}, {self.fighter!r})"
