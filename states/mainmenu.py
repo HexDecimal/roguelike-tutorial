@@ -46,8 +46,7 @@ class MainMenu(states.State[None]):
 
     def new_game(self) -> None:
         self.model = Model()
-        self.model.active_map = procgen.dungeon.generate()
-        self.model.active_map.model = self.model
+        self.model.active_map = procgen.dungeon.generate(self.model)
         self.start()
 
     def start(self) -> None:

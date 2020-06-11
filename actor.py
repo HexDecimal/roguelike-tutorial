@@ -21,7 +21,7 @@ class Actor:
         self.location = location
         self.fighter = fighter
         location.map.actors.append(self)
-        self.ticket: Optional[Ticket] = location.map.scheduler.schedule(0, self.act)
+        self.ticket: Optional[Ticket] = self.scheduler.schedule(0, self.act)
         self.ai = ai_cls(self)
 
     def act(self, scheduler: TurnQueue, ticket: Ticket) -> None:
@@ -38,7 +38,7 @@ class Actor:
 
     @property
     def scheduler(self) -> TurnQueue:
-        return self.location.map.scheduler
+        return self.location.map.model.scheduler
 
     def reschedule(self, interval: int) -> None:
         """Reschedule this actor to run after `interval` ticks."""

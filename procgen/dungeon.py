@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import random
-from typing import Iterator, List, Tuple, Type
+from typing import Iterator, List, Tuple, Type, TYPE_CHECKING
 
 import numpy as np  # type: ignore
 import tcod
@@ -13,6 +13,9 @@ import gamemap
 import items.potions
 import items.scrolls
 import races.common
+
+if TYPE_CHECKING:
+    from model import Model
 
 WALL = gamemap.Tile(
     move_cost=0,
@@ -105,13 +108,13 @@ class Room:
             item_cls().place(gamemap[xy])
 
 
-def generate(width: int = 80, height: int = 45) -> gamemap.GameMap:
+def generate(model: Model, width: int = 80, height: int = 45) -> gamemap.GameMap:
     """Return a randomly generated GameMap."""
     room_max_size = 10
     room_min_size = 6
     max_rooms = 30
 
-    gm = gamemap.GameMap(width, height)
+    gm = gamemap.GameMap(model, width, height)
     gm.tiles[...] = WALL
     rooms: List[Room] = []
 

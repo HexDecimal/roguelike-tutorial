@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import List, TYPE_CHECKING
 
 import states.ingame
+import tqueue
 
 if TYPE_CHECKING:
     from actor import Actor
@@ -27,6 +28,7 @@ class Model:
 
     def __init__(self) -> None:
         self.log: List[Message] = []
+        self.scheduler = tqueue.TurnQueue()
 
     @property
     def player(self) -> Actor:
@@ -48,4 +50,4 @@ class Model:
             if self.is_player_dead():
                 states.ingame.GameOver(self).loop()
                 continue
-            self.active_map.scheduler.invoke_next()
+            self.scheduler.invoke_next()

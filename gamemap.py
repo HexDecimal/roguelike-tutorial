@@ -7,7 +7,6 @@ import numpy as np  # type: ignore
 import tcod
 
 from location import Location
-from tqueue import TurnQueue
 
 if TYPE_CHECKING:
     import tcod.console
@@ -49,10 +48,10 @@ class GameMap:
 
     DARKNESS = np.asarray((0, (0, 0, 0), (0, 0, 0)), dtype=tile_graphic)
 
-    model: Model
     player: Actor
 
-    def __init__(self, width: int, height: int):
+    def __init__(self, model: Model, width: int, height: int):
+        self.model = model
         self.width = width
         self.height = height
         self.shape = width, height
@@ -62,7 +61,6 @@ class GameMap:
         self.actors: List[Actor] = []
         self.items: Dict[Tuple[int, int], List[Item]] = {}
         self.camera_xy = (0, 0)  # Camera center position.
-        self.scheduler = TurnQueue()
 
     def is_blocked(self, x: int, y: int) -> bool:
         """Return True if this position is impassible."""
