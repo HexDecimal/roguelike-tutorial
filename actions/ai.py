@@ -27,9 +27,10 @@ class PathTo(Action):
         blocker_index = tuple(np.transpose(blocker_pos))
         walkable[blocker_index] = 50
         walkable.T[self.dest_xy] = 1
-        return tcod.path.AStar(walkable.T).get_path(
-            *self.actor.location.xy, *self.dest_xy
-        )
+        graph = tcod.path.SimpleGraph(cost=walkable, cardinal=2, diagonal=3)
+        pf = tcod.path.Pathfinder(graph)
+        pf.add_root(self.actor.location.ij)
+        return [(ij[1], ij[0]) for ij in pf.path_to(self.dest_xy[::-1])[1:].tolist()]
 
     def plan(self) -> Action:
         if not self.path_xy:
