@@ -60,3 +60,7 @@ class Item(graphic.Graphic):
     def action_drink(self, action: ActionWithItem) -> None:
         """Drink this item."""
         raise Impossible("You can't drink that.")
+
+    def action_eat(self, action: ActionWithItem) -> None:
+        """Eat this item."""
+        raise Impossible("You can't eat that.")
