@@ -103,6 +103,7 @@ class Room:
                     items.potions.HealingPotion,
                     items.scrolls.LightningScroll,
                     items.scrolls.FireballScroll,
+                    items.other.FoodRation,
                 ]
             )
             item_cls().place(gamemap[xy])

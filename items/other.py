@@ -34,3 +34,12 @@ class Corpse(Eatable):
     def __init__(self, actor: Actor) -> None:
         super().__init__(effect.Healing(1))
         self.name = f"{actor.fighter.name} Corpse"
+
+class FoodRation(Eatable):
+    char = ord("%")
+    color = (127, 0, 0)
+    render_order = 2
+
+    def __init__(self) -> None:
+        super().__init__(effect.Healing(2))
+        self.name = "Food ration"
