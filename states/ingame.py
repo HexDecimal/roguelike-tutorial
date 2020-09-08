@@ -6,7 +6,7 @@ import tcod
 import tcod.console
 
 from actions import common
-from states import State, StateBreak, SaveAndQuit
+from states import State, StateBreak, SaveAndQuit, GameOverQuit
 import rendering
 
 if TYPE_CHECKING:
@@ -51,6 +51,10 @@ class GameOver(GameMapState[None]):
     def cmd_quit(self) -> None:
         """Save and quit."""
         raise SystemExit()
+
+    def cmd_escape(self) -> None:
+        """Finish game"""
+        raise GameOverQuit()
 
 
 class BaseInventoryMenu(GameMapState["actions.Action"]):
