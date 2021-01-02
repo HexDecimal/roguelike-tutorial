@@ -67,7 +67,7 @@ class MainMenu(states.State[None]):
             self.save()
         except SystemExit:
             # Save and exit immediately.
-            if not self.model.is_player_dead:
+            if not self.model.is_player_dead():
                 self.save()
             else:
                 self.remove_save()
