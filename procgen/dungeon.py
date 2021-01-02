@@ -104,6 +104,7 @@ class Room:
                     items.potions.HealingPotion,
                     items.scrolls.LightningScroll,
                     items.scrolls.FireballScroll,
+                    items.scrolls.GenocideScroll,
                     items.scrolls.TeleportScroll,
                 ]
             )
