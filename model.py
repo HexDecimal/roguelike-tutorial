@@ -41,13 +41,14 @@ class Model:
         else:
             self.log.append(Message(text))
 
+    @property
     def is_player_dead(self) -> bool:
         """True if the player had died."""
         return not self.player.fighter or self.player.fighter.hp <= 0
 
     def loop(self) -> None:
         while True:
-            if self.is_player_dead():
+            if self.is_player_dead:
                 states.ingame.GameOver(self).loop()
                 continue
             self.scheduler.invoke_next()
