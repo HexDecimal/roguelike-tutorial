@@ -100,10 +100,11 @@ class Room:
         for xy in self.get_free_spaces(gamemap, items_spawned):
             item_cls = random.choice(
                 [
+                    items.other.FoodRation,
                     items.potions.HealingPotion,
                     items.scrolls.LightningScroll,
                     items.scrolls.FireballScroll,
-                    items.other.FoodRation,
+                    items.scrolls.TeleportScroll,
                 ]
             )
             item_cls().place(gamemap[xy])

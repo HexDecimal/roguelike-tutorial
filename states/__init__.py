@@ -21,6 +21,8 @@ class StateBreak(Exception):
 class SaveAndQuit(Exception):
     pass
 
+class GameOverQuit(Exception):
+    pass
 
 class State(Generic[T], tcod.event.EventDispatch[T]):
     MOVE_KEYS = {
