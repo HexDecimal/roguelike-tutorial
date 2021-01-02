@@ -124,3 +124,10 @@ class DrinkItem(ActionWithItem):
         assert self.item in self.actor.inventory.contents
         self.item.action_drink(self)
         self.actor.reschedule(100)
+
+
+class EatItem(ActionWithItem):
+    def act(self) -> None:
+        assert self.item in self.actor.inventory.contents
+        self.item.action_eat(self)
+        self.actor.reschedule(100)
