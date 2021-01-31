@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Dict, List, NamedTuple, Optional, Tuple, TYPE_CHECKING, Set
 
-import numpy as np  # type: ignore
+import numpy as np
 import tcod
 
 from location import Location
@@ -16,11 +16,11 @@ if TYPE_CHECKING:
     from model import Model
 
 # Data types for handling game map tiles:
-tile_graphic = np.dtype([("ch", np.int), ("fg", "3B"), ("bg", "3B")])
+tile_graphic = np.dtype([("ch", np.int32), ("fg", "3B"), ("bg", "3B")])
 tile_dt = np.dtype(
     [
         ("move_cost", np.uint8),
-        ("transparent", np.bool),
+        ("transparent", bool),
         ("light", tile_graphic),
         ("dark", tile_graphic),
     ]

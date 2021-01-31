@@ -4,7 +4,7 @@ from __future__ import annotations
 import random
 from typing import Iterator, List, Tuple, Type, TYPE_CHECKING
 
-import numpy as np  # type: ignore
+import numpy as np
 import tcod
 
 from actions import ai

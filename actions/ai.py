@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Tuple, TYPE_CHECKING, Optional
 
-import numpy as np  # type: ignore
+import numpy as np
 import tcod.path
 
 from actions import Impossible, Action
