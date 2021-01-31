@@ -5,8 +5,7 @@ from typing import Callable, List, NamedTuple, Optional
 
 
 class Ticket(NamedTuple):
-    """A Ticket represents a specific time and function to call at that time.
-    """
+    """A Ticket represents a specific time and function to call at that time."""
 
     tick: int
     unique_id: int

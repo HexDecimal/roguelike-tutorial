@@ -10,8 +10,8 @@ if TYPE_CHECKING:
     from actions import ActionWithItem
     from actor import Actor
 
-class Eatable(Item):
 
+class Eatable(Item):
     def __init__(self, my_effect: effect.Effect):
         super().__init__()
         self.my_effect = my_effect
@@ -34,6 +34,7 @@ class Corpse(Eatable):
     def __init__(self, actor: Actor) -> None:
         super().__init__(effect.Healing(1))
         self.name = f"{actor.fighter.name} Corpse"
+
 
 class FoodRation(Eatable):
     char = ord("%")

@@ -105,9 +105,7 @@ class GenocideScroll(Scroll):
             if isinstance(actor.fighter, type_fighter):
                 actor.die()
 
-        action.report(
-            f"The {selected_actor.fighter.name} has been genocided"
-        )
+        action.report(f"The {selected_actor.fighter.name} has been genocided")
         self.consume(action)
 
 
