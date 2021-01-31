@@ -1,19 +1,18 @@
 from __future__ import annotations
 
 import sys
-
 import traceback
-from typing import Optional, Type, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Type
 
-from actions import Impossible
 import items.other
+from actions import Impossible
 
 if TYPE_CHECKING:
     from actions import Action
-    from races import Fighter
-    from location import Location
     from inventory import Inventory
-    from tqueue import TurnQueue, Ticket
+    from location import Location
+    from races import Fighter
+    from tqueue import Ticket, TurnQueue
 
 
 class Actor:

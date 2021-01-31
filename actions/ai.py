@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import List, Tuple, TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 import numpy as np
-import tcod.path
+import tcod
 
-from actions import Impossible, Action
 import actions.common
+from actions import Action, Impossible
 from states import ingame
 
 if TYPE_CHECKING:

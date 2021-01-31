@@ -3,9 +3,9 @@ from __future__ import annotations
 import functools
 from typing import TYPE_CHECKING, Iterator
 
+import states.ingame
 from actions import Impossible
 from items import Item
-import states.ingame
 
 if TYPE_CHECKING:
     from actions import ActionWithItem

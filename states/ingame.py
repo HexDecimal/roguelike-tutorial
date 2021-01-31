@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from typing import Any, Generic, Optional, TypeVar, TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, Any, Generic, Optional, Tuple, TypeVar
 
 import tcod
-import tcod.console
 
-from actions import common
-from states import State, StateBreak, SaveAndQuit, GameOverQuit
 import rendering
+from actions import common
+from states import GameOverQuit, SaveAndQuit, State, StateBreak
 
 if TYPE_CHECKING:
     import actions
-    from model import Model
     from items import Item
+    from model import Model
 
 T = TypeVar("T")
 

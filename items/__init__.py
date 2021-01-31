@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import graphic
-
 from actions import Impossible
 
 if TYPE_CHECKING:
     from actions import ActionWithItem
-    from location import Location
     from inventory import Inventory
+    from location import Location
 
 
 class Item(graphic.Graphic):

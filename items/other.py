@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import actions.common
 import effect
 from items import Item
-import actions.common
 
 if TYPE_CHECKING:
-    from actor import Actor
     from actions import ActionWithItem
+    from actor import Actor
 
 class Eatable(Item):
 

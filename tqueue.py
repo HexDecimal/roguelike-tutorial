@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from typing import Callable, List, NamedTuple, Optional
-
 import heapq
+from typing import Callable, List, NamedTuple, Optional
 
 
 class Ticket(NamedTuple):

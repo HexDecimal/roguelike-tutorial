@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Dict, List, NamedTuple, Optional, Tuple, TYPE_CHECKING, Set
+from typing import TYPE_CHECKING, Dict, List, NamedTuple, Optional, Set, Tuple
 
 import numpy as np
 import tcod
@@ -9,7 +9,6 @@ import tcod
 from location import Location
 
 if TYPE_CHECKING:
-    import tcod.console
     from actor import Actor
     from graphic import Graphic
     from items import Item

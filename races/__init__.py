@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import Optional, Type, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Type
 
 import actor
-from actions.ai import BasicMonster
 import graphic
+from actions.ai import BasicMonster
 from inventory import Inventory
-
 
 if TYPE_CHECKING:
     from actions import Action

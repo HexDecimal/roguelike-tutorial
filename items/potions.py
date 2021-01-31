@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import actions.common
 import effect
 from items import Item
-import actions.common
 
 if TYPE_CHECKING:
     from actions import ActionWithItem

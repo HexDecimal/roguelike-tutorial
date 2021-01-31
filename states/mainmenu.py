@@ -1,20 +1,18 @@
 from __future__ import annotations
 
-import sys
-import os.path
-
 import lzma
+import os.path
 import pickle
 import pickletools
+import sys
 import traceback
 from typing import Optional
 
 import tcod
 
 import procgen.dungeon
-from model import Model
 import states.ingame
-
+from model import Model
 
 SAVE_FILE_NAME = "save.sav.xz"
 

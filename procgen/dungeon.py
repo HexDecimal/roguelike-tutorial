@@ -2,17 +2,18 @@
 from __future__ import annotations
 
 import random
-from typing import Iterator, List, Tuple, Type, TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterator, List, Tuple, Type
 
 import numpy as np
 import tcod
 
-from actions import ai
-import races
 import gamemap
+import items.other
 import items.potions
 import items.scrolls
+import races
 import races.common
+from actions import ai
 
 if TYPE_CHECKING:
     from model import Model
